@@ -1,0 +1,15 @@
+{
+ "service":
+ {
+  "threads": 4,
+  "port": 9999,
+  "coin-key": -1,
+  "token": "",
+  "localdata": true
+ },
+ "server": "https://app.metahash.io/api/metachains/",
+ "system":
+ {
+  "is-light-key": false
+ }
+}
