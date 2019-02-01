@@ -15,10 +15,10 @@ namespace settings
 {
     struct service
     {
+        static int threads;
+        static unsigned short port;
         static bool any_conns;
         static bool local_data;
-        static unsigned short port;
-        static int threads;
         static int coin_key;
         static mpz_class gas_price_min;
         static mpz_class gas_price_max;
@@ -37,6 +37,8 @@ namespace settings
         static std::string data_storage;
         static bool isLightKey;
         static bool debug_mode;
+        static unsigned int jrpc_conn_timeout;
+        static unsigned int jrpc_timeout;
     };
 
     void read();

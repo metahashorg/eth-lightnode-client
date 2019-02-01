@@ -16,9 +16,9 @@ public:
     add_to_tracking_handler(http_session_ptr session);
     virtual ~add_to_tracking_handler() override;
 
+protected:
     virtual bool prepare_params() override;
 
-protected:
     void on_batch_complete(const std::string& param);
     void on_batch_tkn_complete(const std::string& param);
 

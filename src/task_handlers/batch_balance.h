@@ -8,7 +8,8 @@ class batch_balance : public base_network_handler
 public:
     batch_balance(http_session_ptr session);
     virtual ~batch_balance() override;
-    
+
+protected:
     virtual bool prepare_params() override;
 };
 

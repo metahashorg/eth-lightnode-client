@@ -8,7 +8,8 @@ class batch_balance_tkn : public base_network_handler
 public:
     batch_balance_tkn(http_session_ptr session);
     virtual ~batch_balance_tkn() override;
-    
+
+protected:
     virtual bool prepare_params() override;
 };
 

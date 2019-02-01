@@ -25,14 +25,15 @@ int main(int argc, char* argv[])
         po::options_description desc("Allowed options");
         desc.add_options()
             ("help",                                            "produce help message")
-            ("request",                     "list of allowed requests with a detailed description")
+            ("requests",                                        "list of allowed requests with a detailed description")
             ("threads",         po::value<int>(),               "number of threads")
             ("port",            po::value<unsigned short>(),    "service port, default is 9999")
             ("server",          po::value<std::string>(),       "server address")
             ("storage",         po::value<std::string>(),       "storage of wallets")
             ("any",                                             "accept any connections")
-            ("token",       po::value<std::string>(),   "sevice token")
-            ("coin-key",    po::value<int>(),           "coin key identificator");
+            ("token",           po::value<std::string>(),       "sevice token")
+            ("coin-key",        po::value<int>(),               "coin key identificator")
+            ("debug",           po::value<bool>(),              "debug mode");
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);

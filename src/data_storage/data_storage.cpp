@@ -126,7 +126,7 @@ namespace storage
         }
     }
 
-    bool database::get_tkn_istory(const std::string_view& address, std::string& result) {
+    bool database::get_tkn_history(const std::string_view& address, std::string& result) {
         std::lock_guard<std::mutex> guard(_locker);
         _status = _db->Put(leveldb::WriteOptions(), string_utils::str_concat(address, "$tkn_hist"), result);
         if (!_status.ok()) {

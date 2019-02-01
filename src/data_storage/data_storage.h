@@ -33,7 +33,7 @@ namespace storage
         static bool get_history(const std::string_view& address, std::string& result);
         static void set_history(const std::string_view& address, const std::string& value, const char* hash);
 
-        static bool get_tkn_istory(const std::string_view& address, std::string& result);
+        static bool get_tkn_history(const std::string_view& address, std::string& result);
         static void set_tkn_history(const std::string_view& address, const std::string& value, const char* hash);
 
         static bool get_tkn_balance(const std::string_view& address, std::string& result);

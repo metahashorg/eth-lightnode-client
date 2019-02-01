@@ -142,7 +142,7 @@ void http_json_rpc_request::on_resolve(const boost::system::error_code& e, tcp::
     if (error_handler(e))
         return;
 
-    m_connect_timer.start(std::chrono::milliseconds(500),
+    m_connect_timer.start(std::chrono::milliseconds(settings::system::jrpc_conn_timeout),
                           boost::bind(&http_json_rpc_request::on_connect_timeout, shared_from_this()));
 
     asio::async_connect(is_ssl() ? m_ssl_socket.lowest_layer() : m_socket, eps,
@@ -172,7 +172,7 @@ void http_json_rpc_request::on_connect(const boost::system::error_code& e, const
     if (error_handler(ec))
         return;
 
-    m_timer.start(std::chrono::milliseconds(60000),
+    m_timer.start(std::chrono::milliseconds(settings::system::jrpc_timeout),
                   boost::bind(&http_json_rpc_request::on_request_timeout, shared_from_this()));
 
     if (is_ssl())

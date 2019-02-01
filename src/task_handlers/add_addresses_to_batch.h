@@ -8,7 +8,8 @@ class add_addresses_to_batch : public base_network_handler
 public:
     add_addresses_to_batch(http_session_ptr session);
     virtual ~add_addresses_to_batch() override;
-    
+
+protected:
     virtual bool prepare_params() override;
     
 };

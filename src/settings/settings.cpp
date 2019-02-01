@@ -19,15 +19,15 @@ namespace   bf      = boost::filesystem;
 namespace settings
 {
     // service
-    bool service::any_conns = {false};
-    bool service::local_data = {false};
     unsigned short service::port = {9999};
     int service::threads = {4};
+    bool service::any_conns = {false};
+    bool service::local_data = {false};
     std::string service::token;
     int service::coin_key = {-1};
-    std::vector<std::string> service::access;
     mpz_class service::gas_price_min;
     mpz_class service::gas_price_max;
+    std::vector<std::string> service::access;
 
     // server
     std::string server::address = {"https://app.metahash.io/api/metachains/"};
@@ -37,6 +37,8 @@ namespace settings
     std::string system::data_storage    = { boost::filesystem::current_path().append("/data").c_str() };
     bool system::isLightKey = true;
     bool system::debug_mode = false;
+    unsigned int system::jrpc_conn_timeout = 60000;
+    unsigned int system::jrpc_timeout = 500;
 
     void read()
     {
@@ -75,6 +77,8 @@ namespace settings
         system::wallet_stotage  = tree.get<std::string>("system.wallets-storage", boost::filesystem::current_path().append("/wallet").c_str());
         system::data_storage    = tree.get<std::string>("system.data-storage", boost::filesystem::current_path().append("/data").c_str());
         system::isLightKey      = tree.get<bool>("system.is-light-key", true);
+        system::jrpc_conn_timeout = tree.get<unsigned int>("system.jrpc-conn-timeout", 60000);
+        system::jrpc_timeout    = tree.get<unsigned int>("system.jrpc-timeout", 500);
     }
 
     void read(boost::program_options::variables_map& vm)

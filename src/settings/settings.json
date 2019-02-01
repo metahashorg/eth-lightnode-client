@@ -10,6 +10,8 @@
  "server": "https://app.metahash.io/api/metachains/",
  "system":
  {
-  "is-light-key": false
+  "is-light-key": false,
+  "jrpc-timeout: 60000,
+  "jrpc-conn-timeout": 500
  }
 }

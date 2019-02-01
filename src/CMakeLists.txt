@@ -52,6 +52,8 @@ add_executable(${PROJECT_NAME}
     task_handlers/get_addresses_to_batch_tkn.cpp
     task_handlers/batch_balance_tkn.cpp
     task_handlers/batch_history_tkn.cpp
+    task_handlers/fetch_balance_tkn.cpp
+    task_handlers/fetch_history_tkn.cpp
 
     task_handlers/add_to_tracking_handler.cpp
     task_handlers/del_from_tracking_handler.cpp
