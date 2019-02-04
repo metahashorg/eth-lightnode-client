@@ -30,8 +30,14 @@ bool fetch_history_tkn::prepare_params()
         CHK_PRM(m_reader.get_value(*params, "address", addr), "address field not found")
         CHK_PRM(!addr.empty(), "address is empty")
         CHK_PRM(addr.compare(0, 2, "0x") == 0, "address field incorrect format")
-
         std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
+
+        std::string contract;
+        CHK_PRM(m_reader.get_value(*params, "contract", contract), "contract field not found")
+        CHK_PRM(!contract.empty(), "contract is empty")
+        CHK_PRM(contract.compare(0, 2, "0x") == 0, "contract field incorrect format")
+        std::transform(contract.begin(), contract.end(), contract.begin(), ::tolower);
+
         /*
         bool local = false;
         if (m_reader.get_value(*params, "local", local)) {
@@ -133,6 +139,9 @@ bool fetch_history_tkn::prepare_params()
         obj.AddMember("currency", settings::service::coin_key, m_writer.get_allocator());
         obj.AddMember("address",
                       rapidjson::Value(addr.c_str(), static_cast<unsigned>(addr.size()), m_writer.get_allocator()),
+                      m_writer.get_allocator());
+        obj.AddMember("contract",
+                      rapidjson::Value(contract.c_str(), static_cast<unsigned>(contract.size()), m_writer.get_allocator()),
                       m_writer.get_allocator());
 
         params->PushBack(obj, m_writer.get_allocator());

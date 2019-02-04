@@ -106,13 +106,16 @@ bool fetch_balance_tkn::prepare_params()
         rapidjson::Value obj(rapidjson::kObjectType);
 
         obj.AddMember("currency", settings::service::coin_key, m_writer.get_allocator());
-
+        obj.AddMember("address",
+                      rapidjson::Value(addr.c_str(), static_cast<unsigned>(addr.size()), m_writer.get_allocator()),
+                      m_writer.get_allocator());
+/*
         rapidjson::Value addr_arr(rapidjson::kArrayType);
         addr_arr.PushBack(rapidjson::Value(addr.c_str(), static_cast<unsigned>(addr.size())),
                           m_writer.get_allocator());
 
         obj.AddMember("address", addr_arr, m_writer.get_allocator());
-
+*/
         params->PushBack(obj, m_writer.get_allocator());
 
         return true;
