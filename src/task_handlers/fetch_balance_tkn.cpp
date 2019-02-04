@@ -109,13 +109,7 @@ bool fetch_balance_tkn::prepare_params()
         obj.AddMember("address",
                       rapidjson::Value(addr.c_str(), static_cast<unsigned>(addr.size()), m_writer.get_allocator()),
                       m_writer.get_allocator());
-/*
-        rapidjson::Value addr_arr(rapidjson::kArrayType);
-        addr_arr.PushBack(rapidjson::Value(addr.c_str(), static_cast<unsigned>(addr.size())),
-                          m_writer.get_allocator());
 
-        obj.AddMember("address", addr_arr, m_writer.get_allocator());
-*/
         params->PushBack(obj, m_writer.get_allocator());
 
         return true;
