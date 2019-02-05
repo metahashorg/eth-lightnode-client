@@ -35,16 +35,16 @@ Create transaction
 
 Send transaction 
 {"id":decimal, "version":"2.0","method":"send-tx", "params":{"address":"hexstr", "password":"str", "to":"hexstr", "value":"decimal/all", "fee":"decimal/auto", "nonce":"decimal", "isPending": "bool"}}
-*nonce можно не узазывать, тогда произойдет автовычисление
+# nonce can be not specified, then in will be calculated automatically
 
 Create transaction token
 {"id":decimal, "version":"2.0","method":"create-tx-token", "params":{"address":"hexstr", "password":"str", "to":"hexstr", "token": "tokenAddr", "value":"decimal/all", "fee":"decimal/auto", "nonce":"decimal", "isPending": "bool"}}
 
 Send transaction token
 {"id":decimal, "version":"2.0","method":"send-tx-token", "params":{"address":"hexstr", "password":"str", "to":"hexstr", "token": "tokenAddr", "value":"decimal/all", "fee":"decimal/auto", "nonce":"decimal", "isPending": "bool"}}
-*nonce можно не узазывать, тогда произойдет автовычисление
+# nonce can be not specified, then in will be calculated automatically
 
-Менеджмент batch транзакций
+Management of batch transactions
 
 {"id":decimal, "version":"2.0","method":"add-addresses-to-batch", "params":{"group": "group", "address":"hexstr"}}
 {"id":decimal, "version":"2.0","method":"del-addresses-to-batch", "params":{"group": "group", "address":"hexstr"}}
