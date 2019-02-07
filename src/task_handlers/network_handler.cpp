@@ -1,11 +1,12 @@
 #include "network_handler.h"
 
 #include <memory>
-
 #include "http_json_rpc_request.h"
 #include "log/log.h"
 #include "http_session.h"
+#include "exception/except.h"
 
+#include <boost/bind.hpp>
 
 base_network_handler::base_network_handler(const std::string &host, http_session_ptr session)
     : base_handler(session) {

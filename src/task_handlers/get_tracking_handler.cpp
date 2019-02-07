@@ -1,5 +1,5 @@
 #include "get_tracking_handler.h"
-
+#include "exception/except.h"
 #include "settings/settings.h"
 #include "data_storage/data_address.h"
 

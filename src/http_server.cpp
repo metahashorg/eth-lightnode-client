@@ -3,13 +3,9 @@
 #include "http_session.h"
 #include "settings/settings.h"
 #include "log/log.h"
-#include "wallet_storage/wallet_storage.h"
 #include "task_handlers/task_handlers.h"
 #include "json_rpc.h"
-#include "http_json_rpc_request.h"
 #include "data_storage/data_updater.h"
-
-#include <iostream>
 
 http_server::http_server(unsigned short port /*= 9999*/, int thread_count /*= 4*/)
     : m_thread_count(thread_count)
@@ -20,7 +16,6 @@ http_server::http_server(unsigned short port /*= 9999*/, int thread_count /*= 4*
 
 http_server::~http_server()
 {
-
 }
 
 void http_server::checkTimeout() {

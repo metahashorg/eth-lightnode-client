@@ -6,6 +6,7 @@
 #include "common/string_utils.h"
 #include "common/big_numbers.h"
 #include "rapidjson/document.h"
+#include "exception/except.h"
 
 // fetch_history_tkn
 fetch_history_tkn::fetch_history_tkn(http_session_ptr session):

@@ -1,5 +1,5 @@
 #include "del_addresses_to_batch.h"
-
+#include "exception/except.h"
 #include "settings/settings.h"
 
 #define RAPIDJSON_HAS_STDSTRING 1

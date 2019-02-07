@@ -1,5 +1,5 @@
 #include "get_addresses_to_batch_tkn.h"
-
+#include "exception/except.h"
 #include "settings/settings.h"
 
 get_addresses_to_batch_tkn::get_addresses_to_batch_tkn(http_session_ptr session)

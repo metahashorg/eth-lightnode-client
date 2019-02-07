@@ -6,6 +6,7 @@
 #include "common/string_utils.h"
 #include "common/big_numbers.h"
 #include "rapidjson/document.h"
+#include "exception/except.h"
 
 // fetch_history_handler
 fetch_history_handler::fetch_history_handler(http_session_ptr session):

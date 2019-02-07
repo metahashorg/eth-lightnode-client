@@ -4,6 +4,7 @@
 #include "data_storage/data_storage.h"
 #include "data_storage/data_address.h"
 #include "common/big_numbers.h"
+#include "exception/except.h"
 
 // fetch_balance_handler
 fetch_balance_handler::fetch_balance_handler(http_session_ptr session):

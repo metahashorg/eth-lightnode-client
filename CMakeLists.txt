@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.8.0)
+cmake_minimum_required(VERSION 3.10.0)
 
 project(metahash_eth_service VERSION 1.0.0 LANGUAGES C CXX)
 

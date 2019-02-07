@@ -5,7 +5,6 @@
 #include <memory>
 #include <mutex>
 #include "leveldb/db.h"
-#include "boost/functional/hash.hpp"
 
 namespace storage
 {

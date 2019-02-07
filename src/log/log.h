@@ -1,17 +1,12 @@
 #ifndef LOGG_H_
 #define LOGG_H_
 
-#include <string>
-#include <sstream>
-#include <map>
-#include <mutex>
-#include <thread>
 #include "settings/settings.h"
 
-#include "GTypes.h"
-#include "P7_Trace.h"
-
 #define USE_DEBUG_LOG_MESSAGE
+
+class IP7_Client;
+class IP7_Trace;
 
 namespace logg
 {

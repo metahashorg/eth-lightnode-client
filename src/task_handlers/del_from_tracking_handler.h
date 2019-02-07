@@ -2,6 +2,7 @@
 #define _DEL_FROM_TRACKING_HANDLER_H_
 
 #include "network_handler.h"
+#include <mutex>
 
 class del_from_tracking_handler : public base_network_handler
 {

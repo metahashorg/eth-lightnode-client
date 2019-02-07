@@ -2,21 +2,14 @@
 #define EXCEPTIONS_H_
 
 #include <string>
-#include <sstream>
+//#include <sstream>
 #include "../log/log.h"
 #include "../eth_wallet/TypedException.h"
 
 class invalid_param
 {
 public:
-    invalid_param(const std::string& message): m_msg(message)
-    {
-        std::stringstream ss;
-        ss << __PRETTY_FUNCTION__ << " in file " << __FILE__ << " at line " << __LINE__;
-        ss.flush();
-        m_where = ss.str();
-    }
-
+    invalid_param(const std::string& message);
     ~invalid_param() {}
 
     std::string_view what() { return m_msg; }
@@ -39,10 +32,7 @@ if (!(condition)) {\
 
 #define CHK_PRM(condition, message) \
     if (!(condition)) {\
-        std::ostringstream stream;\
-        stream << message;\
-        stream.flush();\
-        throw invalid_param(stream.str()); }
+        throw invalid_param(message); }
 
 #define BGN_TRY try
 

@@ -6,7 +6,7 @@
 #include "data_storage/data_address.h"
 #include "data_storage/data_updater.h"
 #include "http_session.h"
-
+#include "exception/except.h"
 #include "common/string_utils.h"
 
 #define BOOST_ERROR_CODE_HEADER_ONLY

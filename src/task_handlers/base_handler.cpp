@@ -1,4 +1,5 @@
 #include "base_handler.h"
+#include "exception/except.h"
 
 base_handler::base_handler(http_session_ptr& session)
     : m_session(session)

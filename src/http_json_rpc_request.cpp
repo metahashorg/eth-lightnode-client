@@ -4,9 +4,10 @@
 #include <iostream>
 #include "common/string_utils.h"
 
-#include <boost/asio/placeholders.hpp>
-#include <boost/asio/connect.hpp>
-#include "boost/random.hpp"
+#include <boost/bind.hpp>
+//#include <boost/asio/placeholders.hpp>
+//#include <boost/asio/connect.hpp>
+//#include "boost/random.hpp"
 
 http_json_rpc_request::http_json_rpc_request(const std::string& host, asio::io_context& execute_context):
     m_async(true),
@@ -151,7 +152,7 @@ void http_json_rpc_request::on_resolve(const boost::system::error_code& e, tcp::
 
 void http_json_rpc_request::on_connect_timeout()
 {
-    LOG_DBG("Connect timeout")
+    LOG_ERR("Connect timeout")
 
     boost::system::error_code ec;
     m_socket.cancel(ec);
@@ -182,7 +183,7 @@ void http_json_rpc_request::on_connect(const boost::system::error_code& e, const
     }
     else
     {
-        LOG_DBG("Send request: %s << %s", m_host.c_str(), m_req.body().c_str())
+        LOG_DBG("Send request: %s <<< %s", m_host.c_str(), m_req.body().c_str())
 
         http::async_write(m_socket, m_req,
             boost::bind(&http_json_rpc_request::on_write, shared_from_this(), asio::placeholders::error));
@@ -194,7 +195,7 @@ void http_json_rpc_request::on_handshake(const boost::system::error_code& e)
     if (error_handler(e))
         return;
 
-    LOG_DBG("Send request: %s << %s", m_host.c_str(), m_req.body().c_str())
+    LOG_DBG("Send request: %s <<< %s", m_host.c_str(), m_req.body().c_str())
 
     http::async_write(m_ssl_socket, m_req,
         boost::bind(&http_json_rpc_request::on_write, shared_from_this(), asio::placeholders::error));
@@ -226,22 +227,19 @@ void http_json_rpc_request::on_read(const boost::system::error_code& e)
     http::status status = m_response.result();
     if (status != http::status::ok)
     {
-        LOG_DBG("Incorrect response http status %d", status)
+        LOG_ERR("Incorrect response http status %d (%s)", status, http::obsolete_reason(status).data())
     }
 
     const bool succ = m_result.parse(m_response.body().c_str());
     if (!succ)
     {
-        LOG_DBG("Response json parse error")
-        if (status != http::status::ok)
-        {
-            std::ostringstream stream;
-            stream << "Incorrect response http status: " << status;
-            m_result.set_error(32002, stream.str().c_str());
+        LOG_ERR("Response json parse error: %u", m_result.getDoc().GetParseError())
+        if (status != http::status::ok) {
+            m_result.set_error(static_cast<int>(status), "Incorrect response http status");
         }
     }
 
-    LOG_DBG("Recieve response: %s >> %s", m_host.c_str(), m_result.stringify().c_str())
+    LOG_DBG("Recieve response: %s >>> %s", m_host.c_str(), m_result.stringify().c_str())
 
     perform_callback();
 

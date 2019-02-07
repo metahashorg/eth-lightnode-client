@@ -1,10 +1,12 @@
 #ifndef DATA_ADDRESS_H_
 #define DATA_ADDRESS_H_
 
+#include <string.h>
 #include <string>
 #include <vector>
 #include <mutex>
-#include <fstream>
+//include <memory>
+//#include <fstream>
 #include "rapidjson/document.h"
 
 namespace storage

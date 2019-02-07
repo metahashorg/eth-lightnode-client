@@ -13,6 +13,8 @@ public:
         std::string password
     );
 
+    ~EthWallet() {};
+
     std::string SignTransaction(
         std::string nonce,
         std::string gasPrice,

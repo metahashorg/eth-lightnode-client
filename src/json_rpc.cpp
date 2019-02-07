@@ -98,6 +98,33 @@ rapidjson::Value* json_rpc_reader::get(const char* name, rapidjson::Value& root)
     return &p->value;
 }
 
+//template <typename T>
+//bool json_rpc_reader::get_value(rapidjson::Value& root, const char* name, T& value) const
+//{
+//    if (!root.IsObject())
+//        return false;
+//    auto v = root.FindMember(name);
+//    if (v != root.MemberEnd() && v->value.Is<T>())
+//    {
+//        value = v->value.Get<T>();
+//        return true;
+//    }
+//    return false;
+//}
+
+bool json_rpc_reader::get_value(rapidjson::Value& root, const char* name, std::string_view& value) const
+{
+    if (!root.IsObject())
+        return false;
+    auto v = root.FindMember(name);
+    if (v != root.MemberEnd() && v->value.IsString())
+    {
+        value = v->value.GetString();
+        return true;
+    }
+    return false;
+}
+
 rapidjson::Document& json_rpc_reader::get_doc()
 {
     return m_doc;

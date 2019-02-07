@@ -1,5 +1,5 @@
 #include "batch_history.h"
-
+#include "exception/except.h"
 #include "settings/settings.h"
 
 #define RAPIDJSON_HAS_STDSTRING 1

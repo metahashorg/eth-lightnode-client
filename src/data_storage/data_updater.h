@@ -4,7 +4,6 @@
 #define RAPIDJSON_HAS_STDSTRING 1
 
 #include <thread>
-#include <mutex>
 
 namespace storage
 {

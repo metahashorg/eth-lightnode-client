@@ -30,6 +30,9 @@ add_executable(${PROJECT_NAME}
     http_json_rpc_request.cpp
     json_rpc.cpp
     http_session.cpp
+    data_storage/data_address.cpp
+    data_storage/data_storage.cpp
+    data_storage/data_updater.cpp
     task_handlers/utils.cpp
     task_handlers/base_handler.cpp
     task_handlers/network_handler.cpp
@@ -59,11 +62,8 @@ add_executable(${PROJECT_NAME}
     task_handlers/del_from_tracking_handler.cpp
     task_handlers/get_tracking_handler.cpp
 
-    ${ETH_SOURCES}    
+    ${ETH_SOURCES}
     wallet_storage/wallet_storage.cpp
-    data_storage/data_address.cpp
-    data_storage/data_storage.cpp
-    data_storage/data_updater.cpp
     task_handlers/task_handlers.cpp
     )
 

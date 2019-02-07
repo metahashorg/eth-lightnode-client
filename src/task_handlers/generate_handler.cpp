@@ -5,6 +5,7 @@
 #include "data_storage/data_address.h"
 #include "http_json_rpc_request.h"
 #include "common/string_utils.h"
+#include "exception/except.h"
 
 #include "add_to_tracking_handler.h"
 

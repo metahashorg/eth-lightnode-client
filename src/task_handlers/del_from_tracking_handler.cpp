@@ -6,6 +6,7 @@
 #include "http_session.h"
 #include "del_addresses_to_batch.h"
 #include "del_addresses_to_batch_tkn.h"
+#include "exception/except.h"
 
 #define BOOST_ERROR_CODE_HEADER_ONLY
 #include <boost/bind/bind.hpp>

@@ -2,9 +2,11 @@
 #define CREATE_TX_BASE_HANDLER_H_
 
 #include "network_handler.h"
-#include "http_session_ptr.h"
-#include "../eth_wallet/EthWallet.h"
+//#include "http_session_ptr.h"
+//#include "../eth_wallet/EthWallet.h"
 #include <gmpxx.h>
+
+class EthWallet;
 
 class create_tx_base_handler : public base_network_handler
 {

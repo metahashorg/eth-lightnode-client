@@ -5,6 +5,7 @@
 
 #include <vector>
 #include <string.h>
+#include <string_view>
 #include "rapidjson/document.h"
 
 static const char json_rpc_ver[] = "2.0";
@@ -54,18 +55,18 @@ public:
         return false;
     }
 
-    bool get_value(rapidjson::Value& root, const char* name, std::string_view& value) const
-    {
-        if (!root.IsObject())
-            return false;
-        auto v = root.FindMember(name);
-        if (v != root.MemberEnd() && v->value.IsString())
-        {
-            value = v->value.GetString();
-            return true;
-        }
-        return false;
-    }
+    bool get_value(rapidjson::Value& root, const char* name, std::string_view& value) const;
+//    {
+//        if (!root.IsObject())
+//            return false;
+//        auto v = root.FindMember(name);
+//        if (v != root.MemberEnd() && v->value.IsString())
+//        {
+//            value = v->value.GetString();
+//            return true;
+//        }
+//        return false;
+//    }
 
     rapidjson::Document& get_doc();
 

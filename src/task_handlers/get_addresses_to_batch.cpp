@@ -1,5 +1,5 @@
 #include "get_addresses_to_batch.h"
-
+#include "exception/except.h"
 #include "settings/settings.h"
 
 get_addresses_to_batch::get_addresses_to_batch(http_session_ptr session): base_network_handler(settings::server::address, session) {

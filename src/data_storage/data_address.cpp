@@ -2,9 +2,7 @@
 #include "settings/settings.h"
 #include "log/log.h"
 #include <boost/filesystem.hpp>
-#include <iostream>
 #include <uuid/uuid.h>
-#include "rapidjson/document.h"
 #include <rapidjson/istreamwrapper.h>
 #include "rapidjson/prettywriter.h"
 
