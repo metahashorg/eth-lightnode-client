@@ -1,11 +1,11 @@
 #include "data_storage.h"
 #include "settings/settings.h"
 #include "data_log.h"
-#include <boost/filesystem.hpp>
+#include "common/filesystem_utils.h"
 #include "leveldb/db.h"
 #include "common/string_utils.h"
 
-namespace bf = boost::filesystem;
+//namespace bf = boost::filesystem;
 
 namespace storage
 {
@@ -20,16 +20,23 @@ namespace storage
         }
         leveldb::Options options;
         options.create_if_missing = true;
-        bf::path data_path(settings::system::data_storage);
-        if (!bf::exists(data_path)) {
-            bf::create_directory(data_path);
+
+        if (!fs_utils::dir::is_exists(settings::system::data_storage.c_str())) {
+            if (!fs_utils::dir::create(settings::system::data_storage.c_str())) {
+                LOG_ERR("storage::database::open: Could not create data storage path");
+                return false;
+            }
         }
-        data_path.append("/db");
-        if (!bf::exists(data_path)) {
-            bf::create_directory(data_path);
+
+        std::string path = string_utils::str_concat(settings::system::data_storage, "/db");
+        if (!fs_utils::dir::is_exists(path.c_str())) {
+            if (!fs_utils::dir::create(path.c_str())) {
+                LOG_ERR("storage::database::open: Could not create db path");
+                return false;
+            }
         }
         leveldb::DB* db = nullptr;
-        _status = leveldb::DB::Open(options, data_path.c_str(), &db);
+        _status = leveldb::DB::Open(options, path.c_str(), &db);
         if (_status.ok()) {
             _db.reset(db);
             return true;

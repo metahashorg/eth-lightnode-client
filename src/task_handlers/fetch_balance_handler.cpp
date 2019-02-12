@@ -127,3 +127,6 @@ void fetch_balance_handler::execute() {
     }
 }
 
+void fetch_balance_handler::execute(handler_callback callback) {
+     base_network_handler::execute(callback);
+}

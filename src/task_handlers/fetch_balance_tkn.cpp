@@ -118,9 +118,9 @@ bool fetch_balance_tkn::prepare_params()
     END_TRY_RET(false)
 }
 
-void fetch_balance_tkn::execute() {
-    if (m_exec) {
-        base_network_handler::execute();
-    }
-}
+//void fetch_balance_tkn::execute() {
+//    if (m_exec) {
+//        base_network_handler::execute();
+//    }
+//}
 

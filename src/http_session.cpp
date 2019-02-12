@@ -6,6 +6,8 @@
 #include "task_handlers/base_handler.h"
 #include "common/string_utils.h"
 
+#include <boost/beast/http.hpp>
+
 http_session::http_session(tcp::socket&& socket) :
     m_socket(std::move(socket))
 {

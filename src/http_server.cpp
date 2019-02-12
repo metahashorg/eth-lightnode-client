@@ -1,4 +1,3 @@
-#include <boost/bind.hpp>
 #include "http_server.h"
 #include "http_session.h"
 #include "settings/settings.h"
@@ -6,6 +5,7 @@
 #include "task_handlers/task_handlers.h"
 #include "json_rpc.h"
 #include "data_storage/data_updater.h"
+//#include <boost/bind.hpp>
 
 http_server::http_server(unsigned short port /*= 9999*/, int thread_count /*= 4*/)
     : m_thread_count(thread_count)
@@ -28,7 +28,14 @@ void http_server::run()
 
     std::vector<std::unique_ptr<std::thread> > threads;
     for (int i = 0; i < m_thread_count; ++i) {
-        threads.emplace_back(new std::thread(boost::bind(&boost::asio::io_context::run, &m_io_ctx)));
+//        threads.emplace_back(new std::thread(boost::bind(&boost::asio::io_context::run, &m_io_ctx)));
+        threads.emplace_back(new std::thread([&](){
+            boost::system::error_code ec;
+            m_io_ctx.run(ec);
+            if (ec) {
+                LOG_ERR("Http server thread return error code: %s", ec.message().c_str())
+            }
+        }));
     }
 
     if (settings::service::local_data) {

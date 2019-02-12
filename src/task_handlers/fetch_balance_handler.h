@@ -9,6 +9,7 @@ public:
     virtual ~fetch_balance_handler() override;
     
     virtual void execute() override;
+    virtual void execute(handler_callback callback) override;
 
 protected:
     virtual bool prepare_params() override;

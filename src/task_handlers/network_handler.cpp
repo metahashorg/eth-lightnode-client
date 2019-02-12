@@ -6,11 +6,21 @@
 #include "http_session.h"
 #include "exception/except.h"
 
+#define BOOST_ERROR_CODE_HEADER_ONLY
+#include <boost/asio/io_context.hpp>
+#include <boost/asio/impl/post.hpp>
+
+// TODO try to rid from boost/bind
 #include <boost/bind.hpp>
 
 base_network_handler::base_network_handler(const std::string &host, http_session_ptr session)
     : base_handler(session) {
-    m_request = std::make_shared<http_json_rpc_request>(host, session ? session->get_io_context() : m_io_ctx);
+    if (session) {
+        m_request = std::make_unique<http_json_rpc_request>(host, session->get_io_context());
+    } else {
+        m_io_ctx.reset(new boost::asio::io_context());
+        m_request = std::make_unique<http_json_rpc_request>(host, *m_io_ctx.get());
+    }
 }
 
 base_network_handler::~base_network_handler() {
@@ -90,9 +100,9 @@ void base_network_handler::on_complete()
 
         process_response(m_id, reader);
 
-        boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify()));
+        send_response();
     }
-    END_TRY_PARAM(boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify()));)
+    END_TRY_PARAM(send_response())
 }
 
 void base_network_handler::on_complete_clbk()
@@ -112,4 +122,9 @@ void base_network_handler::on_complete_clbk()
     END_TRY_PARAM(
                 boost::asio::post(boost::bind(m_callback, m_writer.stringify()));
                 m_callback = nullptr;)
+}
+
+void base_network_handler::send_response()
+{
+    boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify()));
 }

@@ -5,14 +5,8 @@
 #include "settings/settings.h"
 #include "data_storage/data_address.h"
 #include "data_storage/data_updater.h"
-#include "http_session.h"
 #include "exception/except.h"
 #include "common/string_utils.h"
-
-#define BOOST_ERROR_CODE_HEADER_ONLY
-#include <boost/bind/bind.hpp>
-
-// add_to_tracking_handler
 
 add_to_tracking_handler::add_to_tracking_handler(http_session_ptr session)
     : base_network_handler(settings::server::address, session) {
@@ -43,13 +37,14 @@ bool add_to_tracking_handler::prepare_params()
 
         std::string json = string_utils::str_concat("{\"id\":1, \"params\":{\"group\":\"", group, "\", \"address\":\"", m_address ,"\"}}");
 
+        auto self = shared_from(this);
         auto result = perform<add_addresses_to_batch>(m_session, json,
-            boost::bind(&add_to_tracking_handler::on_batch_complete, shared_from(this), boost::placeholders::_1));
+            [self](const std::string& result) { self->on_batch_complete(result); });
 
         CHK_PRM(result.pending, "Failed on send 'add address to batch'");
 
         result = perform<add_addresses_to_batch_tkn>(m_session, json,
-            boost::bind(&add_to_tracking_handler::on_batch_tkn_complete, shared_from(this), boost::placeholders::_1));
+            [self](const std::string& result) { self->on_batch_tkn_complete(result); });
 
         CHK_PRM(result.pending, "Failed on send 'add address to batch token'");
 
@@ -150,7 +145,7 @@ void add_to_tracking_handler::on_complete() {
                              m_status[1] == status_code::scTrue ? true : false, m_writer.get_allocator());
             m_writer.add_value("status", status);
         }
-        boost::asio::post(boost::bind(&http_session::send_json, this->m_session, this->m_writer.stringify()));
+        send_response();
     }
     END_TRY
 }

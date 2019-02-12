@@ -1,12 +1,13 @@
-#include "../eth_wallet/EthWallet.h"
 #include "create_tx_base_handler.h"
-#include "http_json_rpc_request.h"
 #include "wallet_storage/wallet_storage.h"
 #include "settings/settings.h"
-#include "http_session.h"
 #include "exception/except.h"
+#include "common/string_utils.h"
 
-#include <boost/bind.hpp>
+#include "task_handlers/fetch_balance_handler.h"
+#include "task_handlers/get_transaction_params.h"
+
+#include "../eth_wallet/EthWallet.h"
 
 create_tx_base_handler::create_tx_base_handler(http_session_ptr session)
     : base_network_handler(settings::server::address, session){
@@ -34,27 +35,23 @@ bool create_tx_base_handler::prepare_params()
         CHK_PRM(m_to.compare(0, 2, "0x") == 0, "to field must be in hex format")
         
         auto jValue = m_reader.get("nonce", *params);
-        if (jValue)
-        {
+        if (jValue) {
             CHK_PRM(json_utils::val2hex(jValue, m_nonce), "nonce field incorrect format")
         }
         
         jValue = m_reader.get("isPending", *params);
-        if (jValue)
-        {
+        if (jValue) {
             m_is_pending = jValue->GetString();
         }
         
         jValue = m_reader.get("fee", *params);
         CHK_PRM(jValue, "fee field not found")
-        if (jValue->IsString())
-        {
+        if (jValue->IsString()) {
             std::string tmp = jValue->GetString();
             std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
             m_auto_fee = tmp.compare("auto") == 0;
         }
-        if (!m_auto_fee)
-        {
+        if (!m_auto_fee) {
             std::string tmp;
             CHK_PRM(json_utils::val2str(jValue, tmp), "fee field incorrect format")
             m_fee.set_str(tmp, 10);
@@ -62,26 +59,23 @@ bool create_tx_base_handler::prepare_params()
         
         jValue = m_reader.get("value", *params);
         CHK_PRM(jValue, "value field not found")
-        if (jValue->IsString())
-        {
+        if (jValue->IsString()) {
             std::string tmp = jValue->GetString();
             std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
             m_all_value = tmp.compare("all") == 0;
         }
         
-        if (!m_all_value)
-        {
+        if (!m_all_value) {
             CHK_PRM(json_utils::val2hex(jValue, m_value), "value field incorrect format")
         }
         
         m_eth_wallet = std::make_unique<EthWallet>(settings::system::wallet_stotage, m_address, m_password);
         
-        if (m_all_value)
-        {
+        if (m_all_value) {
             get_balance();
             return false;
         }
-        get_transaction_params();
+        get_trans_params();
         
         return false;
     }
@@ -124,28 +118,25 @@ void create_tx_base_handler::build_request()
         
         params->PushBack(obj, m_writer.get_allocator());
         
-        boost::asio::post(boost::bind(&create_tx_base_handler::execute, shared_from(this), nullptr));
+        execute();
+        //boost::asio::post(boost::bind(&create_tx_base_handler::execute, shared_from(this), nullptr));
     }
-    END_TRY_PARAM(boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify())))
+    END_TRY_PARAM(send_response())
 }    
 
-bool create_tx_base_handler::check_json(http_json_rpc_request_ptr request, json_rpc_id id)
+bool create_tx_base_handler::check_json(const std::string& result)
 {
     BGN_TRY
     {
         json_rpc_reader reader;
-        CHK_PRM(reader.parse(request->get_result().c_str()), "Invalid response json")
-        
-        json_rpc_id _id = reader.get_id();
-        CHK_PRM(_id != 0 && _id == id, "Returned id doesn't match")
+        CHK_PRM(reader.parse(result.c_str()), "Invalid response json")
         
         auto err = reader.get_error();
         auto res = reader.get_result();
         
         CHK_PRM(err || res, "No occur result or error")
         
-        if (err)
-        {
+        if (err) {
             m_writer.set_error(*err);
             return false;
         }
@@ -159,57 +150,59 @@ void create_tx_base_handler::get_balance()
 {
     //BGN_TRY
     {
-        json_rpc_writer writer;
-        json_rpc_id id = 1;
-        writer.set_id(id);
-        writer.add("method", "address.balance");
-        writer.add("token", settings::service::token);
+//        json_rpc_writer writer;
+//        json_rpc_id id = 1;
+//        writer.set_id(id);
+//        writer.add("method", "address.balance");
+//        writer.add("token", settings::service::token);
+
+//        auto params = writer.get_params();
+//        params->SetArray();
         
-        auto params = writer.get_params();
-        params->SetArray();
+//        rapidjson::Value obj(rapidjson::kObjectType);
         
-        rapidjson::Value obj(rapidjson::kObjectType);
+//        obj.AddMember("currency",
+//                        rapidjson::Value().SetInt(settings::service::coin_key),
+//                        writer.get_allocator());
+
+//        rapidjson::Value addr_arr(rapidjson::kArrayType);
+//        addr_arr.PushBack(rapidjson::Value().SetString(m_address, writer.get_allocator()),
+//                            writer.get_allocator());
         
-        obj.AddMember("currency",
-                        rapidjson::Value().SetInt(settings::service::coin_key),
-                        writer.get_allocator());
+//        obj.AddMember("address", addr_arr, writer.get_allocator());
         
-        rapidjson::Value addr_arr(rapidjson::kArrayType);
-        addr_arr.PushBack(rapidjson::Value().SetString(m_address, writer.get_allocator()),
-                            writer.get_allocator());
-        
-        obj.AddMember("address", addr_arr, writer.get_allocator());
-        
-        params->PushBack(obj, writer.get_allocator());
-        
+//        params->PushBack(obj, writer.get_allocator());
+
+        auto self = shared_from(this);
+        auto result = perform<fetch_balance_handler>(m_session,
+            string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\"}}"),
+            [self](const std::string& result) { self->on_get_balance(result); });
+
         m_result.pending = true;
-        auto request = std::make_shared<http_json_rpc_request>(settings::server::address, m_session->get_io_context());
-        request->set_body(writer.stringify());
-        request->execute_async(boost::bind(&create_tx_base_handler::on_get_balance, shared_from(this), request, id));
+//        auto request = std::make_shared<http_json_rpc_request>(settings::server::address, m_session->get_io_context());
+//        request->set_body(writer.stringify());
+//        request->execute_async(boost::bind(&create_tx_base_handler::on_get_balance, shared_from(this), request, id));
     }
     //END_TRY
 }
 
-void create_tx_base_handler::on_get_balance(http_json_rpc_request_ptr request, json_rpc_id id)
+void create_tx_base_handler::on_get_balance(const std::string& result)
 {
     BGN_TRY
     {
-        if (!check_json(request, id))
-        {
-            boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify()));
+        if (!check_json(result)) {
+            send_response();
             return;
         }
         
         json_rpc_reader reader;
-        reader.parse(request->get_result().c_str());
+        reader.parse(result.c_str());
         
         std::string balance;
         auto data = reader.get("data", reader.get_doc());
         CHK_PRM(data, "get balance: 'data' field not found")
-        if (data->IsArray())
-        {
-            for (auto& v: data->GetArray())
-            {
+        if (data->IsArray()) {
+            for (auto& v: data->GetArray()) {
                 std::string addr;
                 if (!reader.get_value(v, "address", addr))
                     continue;
@@ -220,12 +213,9 @@ void create_tx_base_handler::on_get_balance(http_json_rpc_request_ptr request, j
                 break;
             }
         }
-        else if (data->IsObject())
-        {
+        else if (data->IsObject()) {
             CHK_PRM(reader.get_value(*data, "balance", balance), "get balance: 'balance' field not found")
-        }
-        else
-        {
+        } else {
             CHK_PRM(false, "get balance: 'balance' field type not supported by service")
         }
         
@@ -236,64 +226,70 @@ void create_tx_base_handler::on_get_balance(http_json_rpc_request_ptr request, j
         m_value = mpz.get_str(16);
         m_value.insert(0, "0x");
         
-        get_transaction_params();
+        get_trans_params();
         
         return;
     }
-    END_TRY_PARAM(boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify())))
+    END_TRY_PARAM(send_response())
 }
 
-void create_tx_base_handler::get_transaction_params()
+void create_tx_base_handler::get_trans_params()
 {
     //BGN_TRY
     {
-        json_rpc_writer writer;
-        json_rpc_id id = 1;
-        writer.set_id(id);
-        writer.add("method", "transaction.params");
-        writer.add("token", settings::service::token);
+//        json_rpc_writer writer;
+//        json_rpc_id id = 1;
+//        writer.set_id(id);
+//        writer.add("method", "transaction.params");
+//        writer.add("token", settings::service::token);
         
-        auto params = writer.get_params();
-        params->SetArray();
+//        auto params = writer.get_params();
+//        params->SetArray();
         
-        rapidjson::Value obj(rapidjson::kObjectType);
+//        rapidjson::Value obj(rapidjson::kObjectType);
         
-        rapidjson::Value cur(rapidjson::kNumberType);
-        cur.SetInt(settings::service::coin_key);
-        obj.AddMember("currency", cur, writer.get_allocator());
+//        rapidjson::Value cur(rapidjson::kNumberType);
+//        cur.SetInt(settings::service::coin_key);
+//        obj.AddMember("currency", cur, writer.get_allocator());
         
-        rapidjson::Value addr(rapidjson::kStringType);
-        addr.SetString(m_address, writer.get_allocator());
-        obj.AddMember("address", addr, writer.get_allocator());
+//        rapidjson::Value addr(rapidjson::kStringType);
+//        addr.SetString(m_address, writer.get_allocator());
+//        obj.AddMember("address", addr, writer.get_allocator());
         
-        if (!m_is_pending.empty()) {
-            rapidjson::Value addr(rapidjson::kStringType);
-            addr.SetString(m_is_pending, writer.get_allocator());
-            obj.AddMember("isPending", addr, writer.get_allocator());
-        }
+//        if (!m_is_pending.empty()) {
+//            rapidjson::Value addr(rapidjson::kStringType);
+//            addr.SetString(m_is_pending, writer.get_allocator());
+//            obj.AddMember("isPending", addr, writer.get_allocator());
+//        }
         
-        params->PushBack(obj, writer.get_allocator());
+//        params->PushBack(obj, writer.get_allocator());
         
+//        std::string json = string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\"}}");
+
+        auto self = shared_from(this);
+        auto result = perform<get_transaction_params>(m_session,
+            string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\",\"isPending\":\"", m_is_pending ,"\"}}"),
+            [self](const std::string& result) { self->on_get_trans_params(result); });
+
         m_result.pending = true;
-        auto request = std::make_shared<http_json_rpc_request>(settings::server::address, m_session->get_io_context());
-        request->set_body(writer.stringify());
-        request->execute_async(boost::bind(&create_tx_base_handler::on_get_transaction_params, shared_from(this), request, id));
+//        auto request = std::make_shared<http_json_rpc_request>(settings::server::address, m_session->get_io_context());
+//        request->set_body(writer.stringify());
+//        request->execute_async(boost::bind(&create_tx_base_handler::on_get_transaction_params, shared_from(this), request, id));
     }
     //END_TRY
 }
 
-void create_tx_base_handler::on_get_transaction_params(http_json_rpc_request_ptr request, json_rpc_id id)
+void create_tx_base_handler::on_get_trans_params(const std::string& result)
 {
     BGN_TRY
     {
-        if (!check_json(request, id))
-        {
-            boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify()));
+        if (!check_json(result)) {
+            send_response();
             return;
         }
         
         json_rpc_reader reader;
-        CHK_PRM(reader.parse(request->get_result().c_str()), "get transaction params: remote service return invalid json")
+        CHK_PRM(reader.parse(result.c_str()), "get transaction params: remote service return invalid json")
         
         rapidjson::Document& doc = reader.get_doc();
         auto data = doc.FindMember("data");
@@ -302,46 +298,38 @@ void create_tx_base_handler::on_get_transaction_params(http_json_rpc_request_ptr
         rapidjson::Value& data_val = data->value;
         CHK_PRM(data_val.IsObject(), "get transaction params: 'data' field incorrect")
         
-        if (m_nonce.empty())
-        {
+        if (m_nonce.empty()) {
             auto vnonce = data_val.FindMember("nonce");
             CHK_PRM(vnonce != data_val.MemberEnd(), "get transaction params: 'nonce' field not found")
-            if (vnonce->value.IsString())
-            {
+            if (vnonce->value.IsString()) {
                 m_nonce = vnonce->value.GetString();
             }
         }
         
-        if (m_gas_price.empty())
-        {
+        if (m_gas_price.empty()) {
             auto vgas_price = data_val.FindMember("gas_price");
             CHK_PRM(vgas_price != data_val.MemberEnd(), "get transaction params: 'gas_price' field not found")
-            if (vgas_price->value.IsString())
-            {
+            if (vgas_price->value.IsString()) {
                 m_gas_price = vgas_price->value.GetString();
             }
         }
-        if (m_gas_price.empty())
-        {
+        if (m_gas_price.empty()) {
             LOG_WRN("gas price empty");
         }
         
-        if (m_gas_limit.empty())
-        {
+        if (m_gas_limit.empty()) {
             auto vgas_limit = data_val.FindMember("gas_limit");
             CHK_PRM(vgas_limit != data_val.MemberEnd(), "get transaction params: 'gas_limit' field not found")
-            if (vgas_limit->value.IsString())
-            {
+            if (vgas_limit->value.IsString()) {
                 m_gas_limit = vgas_limit->value.GetString();
             }
         }
-        if (m_gas_limit.empty())
-        {
+        if (m_gas_limit.empty()) {
             LOG_WRN("gas limit empty");
         }
         
         build_request();
         
     }
-    END_TRY_PARAM(boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify())))
+    END_TRY_PARAM(send_response())
 }

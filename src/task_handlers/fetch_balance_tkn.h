@@ -8,7 +8,7 @@ public:
     fetch_balance_tkn(http_session_ptr session);
     virtual ~fetch_balance_tkn() override;
 
-    virtual void execute() override;
+//    virtual void execute() override;
 
 protected:
     virtual bool prepare_params() override;

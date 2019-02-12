@@ -3,8 +3,10 @@
 
 #include "network_handler.h"
 #include "http_session_ptr.h"
-#include "eth_wallet/EthWallet.h"
+//#include "eth_wallet/EthWallet.h"
 #include <gmpxx.h>
+
+class EthWallet;
 
 class create_tx_token_base_handler : public base_network_handler
 {
@@ -17,11 +19,11 @@ protected:
 
     bool check_params();
     void build_request();
-    void on_get_transaction_params(http_json_rpc_request_ptr request, json_rpc_id id);
-    void get_transaction_params();
-    void on_get_balance(http_json_rpc_request_ptr request, json_rpc_id id);
+    void on_get_trans_params(const std::string& result);
+    void get_trans_params();
+    void on_get_balance(const std::string& result);
     void get_balance();
-    bool check_json(http_json_rpc_request_ptr request, json_rpc_id id);
+    bool check_json(const std::string& result);
     
 protected:
     bool                        m_auto_fee = {false};

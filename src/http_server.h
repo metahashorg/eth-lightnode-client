@@ -3,11 +3,10 @@
 
 #define BOOST_ERROR_CODE_HEADER_ONLY
 #include <boost/asio/ip/tcp.hpp>
-#include <boost/asio/system_timer.hpp>
 
-namespace	asio    = boost::asio;
-namespace	ip      = boost::asio::ip;
-using		tcp     = boost::asio::ip::tcp;
+namespace   asio    = boost::asio;
+namespace   ip      = boost::asio::ip;
+using       tcp     = boost::asio::ip::tcp;
 
 class http_server
 {

@@ -18,11 +18,11 @@ bool get_addresses_to_batch_tkn::prepare_params()
 
         auto params = m_reader.get_params();
         CHK_PRM(params, "params field not found")
-        
+
         std::string_view group;
         CHK_PRM(m_reader.get_value(*params, "group", group), "group field not found")
         CHK_PRM(!group.empty(), "group is empty")
-        
+
         m_writer.add("method", "tkn.batch.addresses");
         m_writer.add("token", settings::service::token);
 

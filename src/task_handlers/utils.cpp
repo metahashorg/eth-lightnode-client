@@ -3,6 +3,7 @@
 #include "log/log.h"
 #include <iostream>
 #include "time_duration.h"
+#include <sys/time.h>
 
 namespace utils
 {
@@ -114,7 +115,7 @@ namespace utils
         if (!m_run)
         {
             m_run = true;
-            m_start = boost::posix_time::microsec_clock::local_time();
+            gettimeofday(&m_start, NULL);
         }
     }
 
@@ -123,7 +124,10 @@ namespace utils
         if (m_run)
         {
             m_run = false;
-            LOG_DBG("%s: %d millisec", m_msg.c_str(), (boost::posix_time::microsec_clock::local_time() - m_start).total_milliseconds())
+            struct timeval end;
+            gettimeofday(&end, NULL);
+            long elapsed = ((end.tv_sec - m_start.tv_sec) * 1000) + (end.tv_usec / 1000 - m_start.tv_usec / 1000);
+            LOG_DBG("%s: %lu milisec", m_msg.c_str(), elapsed);
         }
     }
 }

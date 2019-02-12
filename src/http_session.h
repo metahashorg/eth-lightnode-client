@@ -2,8 +2,10 @@
 #define HTTP_SESSION_H_
 
 #define BOOST_ERROR_CODE_HEADER_ONLY
-#include <boost/beast/core.hpp>
-#include <boost/beast/http.hpp>
+//#include <boost/beast/core.hpp>
+#include <boost/beast/core/flat_buffer.hpp>
+//#include <boost/beast/http.hpp>
+#include <boost/beast/http/string_body.hpp>
 #include <boost/asio/ip/tcp.hpp>
 
 namespace   asio    = boost::asio;

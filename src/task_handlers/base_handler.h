@@ -7,6 +7,7 @@
 #include "json_rpc.h"
 #include "log/log.h"
 #include "time_duration.h"
+#include <bits/std_function.h>
 
 using mh_count_t = uint64_t;
 

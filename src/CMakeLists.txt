@@ -22,11 +22,13 @@ set(ETH_SOURCES
 
 add_executable(${PROJECT_NAME}
     common/string_utils.cpp
+    common/filesystem_utils.cpp
     log/log.cpp
     main.cpp
     exception/except.cpp
     settings/settings.cpp
     http_server.cpp
+    #http_json_rpc_request_impl.cpp
     http_json_rpc_request.cpp
     json_rpc.cpp
     http_session.cpp
@@ -57,7 +59,8 @@ add_executable(${PROJECT_NAME}
     task_handlers/batch_history_tkn.cpp
     task_handlers/fetch_balance_tkn.cpp
     task_handlers/fetch_history_tkn.cpp
-
+    task_handlers/get_transaction_params.cpp
+    task_handlers/get_transaction_params_tkn.cpp
     task_handlers/add_to_tracking_handler.cpp
     task_handlers/del_from_tracking_handler.cpp
     task_handlers/get_tracking_handler.cpp
@@ -107,7 +110,7 @@ target_link_libraries(${PROJECT_NAME} ${LIB_CRYPTO} ${LIB_SSL} ${LIB_LEVELDB} ${
 
 #include_directories(../3rd_party/leveldb/include/)
 
-set (CMAKE_CXX_FLAGS "-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -pthread -Ofast -Wall -Wextra -Werror -Wno-unused-parameter -Wfloat-equal")
+#set (CMAKE_CXX_FLAGS "-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -pthread -Ofast -Wall -Wextra -Werror -Wno-unused-parameter -Wfloat-equal")
 
 target_compile_options(${PROJECT_NAME} PRIVATE -no-pie -D_GLIBCXX_USE_CXX11_ABI=0)
 set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-no-pie -D_GLIBCXX_USE_CXX11_ABI=0")

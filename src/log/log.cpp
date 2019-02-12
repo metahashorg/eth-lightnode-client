@@ -1,14 +1,6 @@
-#include <iostream>
 #include "log.h"
-#include <syslog.h>
-#include <iostream>
-#include <fstream>
-#include <experimental/filesystem>
-
 #include "GTypes.h"
 #include "P7_Trace.h"
-
-namespace fs = std::experimental::filesystem;
 
 namespace logg
 {

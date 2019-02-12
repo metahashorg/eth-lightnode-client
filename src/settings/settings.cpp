@@ -1,7 +1,5 @@
 #include "settings.h"
 
-#include <iostream>
-#include <boost/filesystem.hpp>
 #include <boost/property_tree/json_parser.hpp>
 #include <boost/property_tree/ptree.hpp>
 #include <boost/asio/ip/tcp.hpp>
@@ -11,10 +9,9 @@
 #include <boost/program_options.hpp>
 
 namespace   pt      = boost::property_tree;
-namespace	asio    = boost::asio;
-namespace	ip      = boost::asio::ip;
-using		tcp     = boost::asio::ip::tcp;
-namespace   bf      = boost::filesystem;
+namespace   asio    = boost::asio;
+namespace   ip      = boost::asio::ip;
+using       tcp     = boost::asio::ip::tcp;
 
 namespace settings
 {
@@ -33,8 +30,8 @@ namespace settings
     std::string server::address = {"https://app.metahash.io/api/metachains/"};
 
     // system
-    std::string system::wallet_stotage  = { boost::filesystem::current_path().append("/wallet").c_str() };
-    std::string system::data_storage    = { boost::filesystem::current_path().append("/data").c_str() };
+    std::string system::wallet_stotage  = { "./wallet" };
+    std::string system::data_storage    = { "./data" };
     bool system::isLightKey = true;
     bool system::debug_mode = false;
     unsigned int system::jrpc_conn_timeout = 60000;
@@ -43,9 +40,7 @@ namespace settings
     void read()
     {
         pt::ptree tree;
-        auto path = boost::filesystem::current_path();
-        path.append("/settings.json");
-        pt::read_json(path.c_str(), tree);
+        pt::read_json("./settings.json", tree);
 
         service::port           = tree.get<unsigned short>("service.port", 9999);
         service::threads        = tree.get<int>("service.threads", 4);
@@ -74,8 +69,8 @@ namespace settings
 
         server::address = tree.get<std::string>("server", "https://app.metahash.io/api/metachains/");
 
-        system::wallet_stotage  = tree.get<std::string>("system.wallets-storage", boost::filesystem::current_path().append("/wallet").c_str());
-        system::data_storage    = tree.get<std::string>("system.data-storage", boost::filesystem::current_path().append("/data").c_str());
+        system::wallet_stotage  = tree.get<std::string>("system.wallets-storage", "./wallet");
+        system::data_storage    = tree.get<std::string>("system.data-storage", "./data");
         system::isLightKey      = tree.get<bool>("system.is-light-key", true);
         system::jrpc_conn_timeout = tree.get<unsigned int>("system.jrpc-conn-timeout", 60000);
         system::jrpc_timeout    = tree.get<unsigned int>("system.jrpc-timeout", 500);

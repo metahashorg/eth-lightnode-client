@@ -1,9 +1,9 @@
 #include "wallet_storage.h"
-#include <boost/filesystem.hpp>
+//#include <boost/filesystem.hpp>
 
-#include "settings/settings.h"
+//#include "settings/settings.h"
 
-namespace bf = boost::filesystem;
+//namespace bf = boost::filesystem;
 
 namespace storage
 {

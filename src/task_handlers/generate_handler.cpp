@@ -3,7 +3,7 @@
 
 #include "settings/settings.h"
 #include "data_storage/data_address.h"
-#include "http_json_rpc_request.h"
+//#include "http_json_rpc_request.h"
 #include "common/string_utils.h"
 #include "exception/except.h"
 

@@ -1,12 +1,17 @@
 #include "data_address.h"
 #include "settings/settings.h"
 #include "log/log.h"
-#include <boost/filesystem.hpp>
+#include <fstream>
+//#include <boost/filesystem.hpp>
+#include "common/filesystem_utils.h"
+#include "common/string_utils.h"
+#include <sys/stat.h>
 #include <uuid/uuid.h>
 #include <rapidjson/istreamwrapper.h>
 #include "rapidjson/prettywriter.h"
+#include <memory>
 
-namespace bf = boost::filesystem;
+//namespace bf = boost::filesystem;
 
 namespace storage
 {
@@ -17,24 +22,32 @@ namespace storage
     std::string addresses::_group;
     addresses::last_blocks addresses::m_last_blocks;
 
-    bool addresses::read_file(rapidjson::Document& doc) {
+    bool addresses::read_file(rapidjson::Document& doc)
+    {
         if (settings::system::data_storage.empty()) {
             LOG_ERR("storage::address::read_file: Data storage path not defined");
             return false;
         }
-        bf::path data_path(settings::system::data_storage);
-        if (!bf::exists(data_path)) {
-            bf::create_directory(data_path);
+        if (!fs_utils::dir::is_exists(settings::system::data_storage.c_str())) {
+            if (!fs_utils::dir::create(settings::system::data_storage.c_str())) {
+                LOG_ERR("storage::address::read_file: Could not create data storage path");
+                return false;
+            }
         }
-        data_path.append("/addresses");
-        if (!bf::exists(data_path)) {
-            bf::create_directory(data_path);
+
+        std::string path = string_utils::str_concat(settings::system::data_storage, "/addresses");
+        if (!fs_utils::dir::is_exists(path.c_str())) {
+            if (!fs_utils::dir::create(path.c_str())) {
+                LOG_ERR("storage::address::read_file: Could not create adresses path");
+                return false;
+            }
         }
-        data_path.append("/tracking");
+
+        path.append("/tracking");
         std::fstream fs;
-        fs.open(data_path.c_str());
+        fs.open(path.c_str());
         if (!fs.is_open()) {
-            fs.open(data_path.c_str(), std::fstream::out);
+            fs.open(path.c_str(), std::fstream::out);
             if (!fs.is_open()) {
                 LOG_ERR("storage::address::read_file: Could not open tracking file: %s", strerror(errno));
                 return false;
@@ -42,7 +55,7 @@ namespace storage
             fs << "{}";
             fs.flush();
             fs.close();
-            fs.open(data_path.c_str());
+            fs.open(path.c_str());
             if (!fs.is_open()) {
                 LOG_ERR("storage::address::read_file: Could not open tracking file: %s", strerror(errno));
                 return false;
@@ -61,23 +74,30 @@ namespace storage
         return true;
     }
 
-    bool addresses::write_file(rapidjson::Document& doc) {
+    bool addresses::write_file(rapidjson::Document& doc)
+    {
         if (settings::system::data_storage.empty()) {
             LOG_ERR("storage::address::write_file: Data storage path not defined");
             return false;
         }
-        bf::path data_path(settings::system::data_storage);
-        if (!bf::exists(data_path)) {
-            bf::create_directory(data_path);
+        if (!fs_utils::dir::is_exists(settings::system::data_storage.c_str())) {
+            if (!fs_utils::dir::create(settings::system::data_storage.c_str())) {
+                LOG_ERR("storage::address::read_file: Could not create data storage path");
+                return false;
+            }
         }
-        data_path.append("/addresses");
-        if (!bf::exists(data_path)) {
-            bf::create_directory(data_path);
+        std::string path = string_utils::str_concat(settings::system::data_storage, "/addresses");
+        if (!fs_utils::dir::is_exists(path.c_str())) {
+            if (!fs_utils::dir::create(path.c_str())) {
+                LOG_ERR("storage::address::read_file: Could not create adresses path");
+                return false;
+            }
         }
-        data_path.append("/tracking");
+
+        path.append("/tracking");
         std::fstream fs;
 
-        fs.open(data_path.c_str(), std::ios::out);
+        fs.open(path.c_str(), std::ios::out);
         if (!fs.is_open()) {
             LOG_ERR("storage::address::write_file: Could not open tracking file: %s", strerror(errno));
             return false;
