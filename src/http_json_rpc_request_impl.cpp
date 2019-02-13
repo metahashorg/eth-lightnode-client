@@ -77,11 +77,14 @@ void http_json_rpc_request_impl::set_body(const std::string& body)
 
 bool http_json_rpc_request_impl::error_handler(const boost::system::error_code& e)
 {
-    if (!e)
+    if (!e) {
         return false;
+    }
 
     m_timer.stop();
     m_connect_timer.stop();
+
+    LOG_ERR("Json rpc request error %d: %s", e.value(), e.message().c_str())
 
     boost::system::error_code ec;
     if (m_socket.is_open())
@@ -98,8 +101,6 @@ bool http_json_rpc_request_impl::error_handler(const boost::system::error_code& 
         m_result.set_error(32000, e.message().c_str());
         perform_callback();
     }
-
-    LOG_ERR("Request error %d: %s", e.value(), e.message().c_str())
 
     if (!m_async && !m_io_ctx.stopped())
         m_io_ctx.stop();
@@ -131,7 +132,7 @@ void http_json_rpc_request_impl::execute_async(http_json_rpc_execute_callback ca
 
 void http_json_rpc_request_impl::on_request_timeout()
 {
-    LOG_ERR("Request timeout")
+    LOG_ERR("Request timeout %u millisec", settings::system::jrpc_timeout)
 
     m_connect_timer.stop();
 
@@ -157,12 +158,13 @@ void http_json_rpc_request_impl::on_resolve(const boost::system::error_code& e, 
 
 void http_json_rpc_request_impl::on_connect_timeout()
 {
-    LOG_ERR("Connect timeout")
+    LOG_ERR("Connect timeout %u millisec", settings::system::jrpc_conn_timeout)
 
     boost::system::error_code ec;
     m_socket.cancel(ec);
 
-    m_connect_timer.run_once();
+    //m_connect_timer.run_once();
+    m_connect_timer.stop();
 }
 
 void http_json_rpc_request_impl::on_connect(const boost::system::error_code& e, const tcp::endpoint&)

@@ -70,7 +70,7 @@ private:
     utils::time_duration                m_duration;
     http::request<http::string_body>    m_req { http::verb::post, "/", 11 };
     http::response<http::string_body>   m_response;
-    boost::beast::flat_buffer           m_buf { 8192 };
+    boost::beast::flat_buffer           m_buf { 1024*16 };
     json_rpc_writer                     m_result;
     http_json_rpc_execute_callback      m_callback;
     std::string                         m_host;

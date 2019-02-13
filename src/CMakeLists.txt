@@ -64,6 +64,7 @@ add_executable(${PROJECT_NAME}
     task_handlers/add_to_tracking_handler.cpp
     task_handlers/del_from_tracking_handler.cpp
     task_handlers/get_tracking_handler.cpp
+    task_handlers/status_handler.cpp
 
     ${ETH_SOURCES}
     wallet_storage/wallet_storage.cpp

@@ -22,6 +22,7 @@
 #include "get_tracking_handler.h"
 #include "fetch_balance_tkn.h"
 #include "fetch_history_tkn.h"
+#include "status_handler.h"
 
 const std::map<std::string, handler_func> map_handlers = {
     { "generate",                       perform<generate_handler> },
@@ -45,5 +46,6 @@ const std::map<std::string, handler_func> map_handlers = {
     { "del-from-tracking",              perform<del_from_tracking_handler> },
     { "get-tracking",                   perform<get_tracking_handler> },
     { "fetch-balance-tkn",              perform<fetch_balance_tkn> },
-    { "fetch-history-tkn",              perform<fetch_history_tkn> }
+    { "fetch-history-tkn",              perform<fetch_history_tkn> },
+    { "status",                         perform<status_handler> }
 };
