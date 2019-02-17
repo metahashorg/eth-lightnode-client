@@ -31,6 +31,8 @@ namespace logg
     void push_wrn(const char* format, ...);
     void push_inf(const char* format, ...);
     void push_dbg(const char* format, ...);
+
+    void push_msg(const char* format, va_list& list, int lvl);
 }
 
 #define LOG_INF(...)\

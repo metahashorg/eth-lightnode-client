@@ -1,5 +1,4 @@
 #include <iostream>
-//#include <memory>
 
 #include "http_server.h"
 #include "settings/settings.h"
@@ -9,29 +8,17 @@
 #include <boost/program_options.hpp>
 
 namespace po = boost::program_options;
-//namespace bs = boost::system;
 
 static std::unique_ptr<http_server> server;
 
 void print_request_help();
 
-//#include "task_handlers/time_duration.h"
-
-#include "common/filesystem_utils.h"
-
 int main(int argc, char* argv[])
 {
     try {
-//        bool b1 = fs_utils::dir::is_exists("./path");
-//        bool b2 = fs_utils::dir::create("./path");
-//        bool b3 = fs_utils::dir::is_exists("./path/1");
-//        bool b4 = fs_utils::dir::create("./path/1");
-
         logg::init();
 
         settings::read();
-
-        settings::system::debug_mode = true;
 
         po::options_description desc("Allowed options");
         desc.add_options()
@@ -44,7 +31,7 @@ int main(int argc, char* argv[])
             ("any",                                             "accept any connections")
             ("token",           po::value<std::string>(),       "sevice token")
             ("coin-key",        po::value<int>(),               "coin key identificator")
-            ("debug",           po::value<bool>(),              "debug mode");
+            ("debug",                                           "debug mode");
 
         po::variables_map vm;
         po::store(po::parse_command_line(argc, argv, desc), vm);
