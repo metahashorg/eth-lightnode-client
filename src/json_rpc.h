@@ -14,10 +14,14 @@ static const std::vector<std::string> json_rpc_service = {"id", "version", "resu
 
 using json_rpc_id = uint32_t;
 
+class json_rpc_writer;
+
 namespace json_utils
 {
     bool val2str(rapidjson::Value* value, std::string& resut);
     bool val2hex(rapidjson::Value* value, std::string& resut);
+
+    void to_json(const std::string_view& param_list, rapidjson::Value& out, rapidjson::Document::AllocatorType& allocator);
 }
 
 class json_rpc_reader

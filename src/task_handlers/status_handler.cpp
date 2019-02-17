@@ -18,9 +18,11 @@ bool status_handler::prepare_params()
     BGN_TRY
     {
         std::string_view cmd;
-        if (m_reader.get_value(m_reader.get_doc(), "cmd", cmd)) {
-            if (cmd == "keys") {
-                m_cmd = cmd::keys;
+        if (auto params = m_reader.get_params()) {
+            if (m_reader.get_value(*params, "cmd", cmd)) {
+                if (cmd == "keys") {
+                    m_cmd = cmd::keys;
+                }
             }
         }
         return true;

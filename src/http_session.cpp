@@ -46,43 +46,17 @@ void http_session::process_request()
 {
     LOG_DBG("http session: %s >>> %s", m_socket.remote_endpoint().address().to_string().c_str(), m_req.body().c_str());
 
-    if (m_req.target().size() != 1 || m_req.target()[0] != '/')
-    {
-        send_bad_request("Incorrect path");
-        return;
-    }
-
-    if (m_req.method() != http::verb::post)
-    {
+    switch(m_req.method()) {
+    case http::verb::post:
+        process_post_request();
+        break;
+    case http::verb::get:
+        process_get_request();
+        break;
+    default:
         send_bad_request("Incorrect http method");
-        return;
+        break;
     }
-
-    std::string json;
-    json_rpc_reader reader;
-    json_rpc_writer writer;
-    if (reader.parse(m_req.body().c_str())) {
-        auto it = map_handlers.find(reader.get_method());
-        if (it == map_handlers.end()) {
-            LOG_WRN("Incorrect service method %s", reader.get_method().c_str())
-
-            writer.set_id(reader.get_id());
-            writer.set_error(-32601, string_utils::str_concat("Method '", reader.get_method(), "' not found"));
-            json = writer.stringify();
-        } else {
-            auto res = it->second(shared_from_this(), m_req.body());
-            // async operation
-            if (!res)
-                return;
-            json.append(res.message);
-        }
-    } else {
-        LOG_ERR("Incorrect json %u: %s", reader.get_parse_error().Code(), m_req.body().c_str())
-        writer.set_error(-32700, "Parse error");
-        json = writer.stringify();
-    }
-
-    send_json(json);
 }
 
 void http_session::send_bad_request(const char* error)
@@ -115,4 +89,78 @@ void http_session::send_response(http::response<http::string_body>& response)
     response.set(http::field::keep_alive, true);
     response.keep_alive(true);
     http::write(m_socket, response);
+}
+
+void http_session::process_post_request()
+{
+    if (m_req.target().size() != 1 || m_req.target()[0] != '/')
+    {
+        send_bad_request("Incorrect path");
+        return;
+    }
+
+    std::string json;
+    json_rpc_reader reader;
+    json_rpc_writer writer;
+    if (reader.parse(m_req.body().c_str())) {
+        auto it = post_handlers.find(reader.get_method());
+        if (it == post_handlers.end()) {
+            LOG_WRN("Incorrect service method %s", reader.get_method().c_str())
+
+            writer.set_id(reader.get_id());
+            writer.set_error(-32601, string_utils::str_concat("Method '", reader.get_method(), "' not found"));
+            json = writer.stringify();
+        } else {
+            auto res = it->second(shared_from_this(), m_req.body());
+            // async operation
+            if (!res)
+                return;
+            json.append(res.message);
+        }
+    } else {
+        LOG_ERR("Incorrect json %u: %s", reader.get_parse_error().Code(), m_req.body().c_str())
+        writer.set_error(-32700, "Parse error");
+        json = writer.stringify();
+    }
+
+    send_json(json);
+}
+
+void http_session::process_get_request()
+{
+    if (m_req.target().size() == 1) {
+        send_bad_request("Incorrect path");
+        return;
+    }
+
+    std::string_view params;
+    std::string_view method(m_req.target().data(), m_req.target().size());
+    size_t tmp = method.find_first_of('?');
+    if (tmp != std::string_view::npos) {
+        params = method.substr(tmp + 1, method.size() - tmp);
+        method.remove_suffix(method.size() - tmp);
+    }
+
+    method.remove_prefix(1);
+
+    std::string json;
+    json_rpc_writer writer;
+    auto it = get_handlers.find(method);
+    if (it == get_handlers.end()) {
+        LOG_WRN("Incorrect service method %s", method.data())
+        writer.set_id(1);
+        writer.set_error(-32602, string_utils::str_concat("Method '", method, "' not found"));
+        json = writer.stringify();
+    } else {
+        writer.set_id(1);
+        if (!params.empty()) {
+            json_utils::to_json(params, *writer.get_params(), writer.get_allocator());
+        }
+        auto res = it->second(shared_from_this(), writer.stringify());
+        // async operation
+        if (!res)
+            return;
+        json.append(res.message);
+    }
+    send_json(json);
 }

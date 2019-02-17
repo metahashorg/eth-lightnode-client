@@ -24,7 +24,7 @@
 #include "fetch_history_tkn.h"
 #include "status_handler.h"
 
-const std::map<std::string, handler_func> map_handlers = {
+const std::map<std::string, handler_func> post_handlers = {
     { "generate",                       perform<generate_handler> },
     { "create-tx",                      perform<create_tx_handler> },
     { "send-tx",                        perform<send_tx_handler> },
@@ -47,5 +47,9 @@ const std::map<std::string, handler_func> map_handlers = {
     { "get-tracking",                   perform<get_tracking_handler> },
     { "fetch-balance-tkn",              perform<fetch_balance_tkn> },
     { "fetch-history-tkn",              perform<fetch_history_tkn> },
+    { "status",                         perform<status_handler> }
+};
+
+const std::map<std::string_view, handler_func> get_handlers {
     { "status",                         perform<status_handler> }
 };
