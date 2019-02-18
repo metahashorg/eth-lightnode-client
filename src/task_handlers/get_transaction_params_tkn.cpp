@@ -29,6 +29,18 @@ bool get_transaction_params_tkn::prepare_params()
 
         std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
 
+        std::string to_addr;
+        CHK_PRM(m_reader.get_value(*params, "to_address", to_addr), "to_address field not found")
+        CHK_PRM(!to_addr.empty(), "to_address is empty")
+        CHK_PRM(to_addr.compare(0, 2, "0x") == 0, "to_address field incorrect format")
+
+        std::transform(to_addr.begin(), to_addr.end(), to_addr.begin(), ::tolower);
+
+        std::string value;
+        CHK_PRM(m_reader.get_value(*params, "value", value), "value field not found")
+        const mpz_class result(value);
+        value = "0x" + result.get_str(16);
+
         std::string pending;
         auto pend = m_reader.get("isPending", *params);
         if (pend) {
@@ -48,6 +60,14 @@ bool get_transaction_params_tkn::prepare_params()
         rapidjson::Value addr_obj(rapidjson::kStringType);
         addr_obj.SetString(addr, m_writer.get_allocator());
         obj.AddMember("address", addr, m_writer.get_allocator());
+
+        rapidjson::Value toaddr_obj(rapidjson::kStringType);
+        addr_obj.SetString(to_addr, m_writer.get_allocator());
+        obj.AddMember("to_address", to_addr, m_writer.get_allocator());
+
+        rapidjson::Value value_obj(rapidjson::kStringType);
+        value_obj.SetString(value, m_writer.get_allocator());
+        obj.AddMember("value", value_obj, m_writer.get_allocator());
 
         if (!pending.empty()) {
             rapidjson::Value pend(rapidjson::kStringType);

@@ -285,9 +285,11 @@ void create_tx_token_base_handler::get_trans_params()
         
 //        params->PushBack(obj, writer.get_allocator());
 
+        std::string json = string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\",\"to_address\":\"", m_to ,"\",\"value\":\"");
+        string_utils::str_append(json, m_value, "\",\"isPending\":\"", m_is_pending ,"\"}}");
+
         auto self = shared_from(this);
-        auto result = perform<get_transaction_params_tkn>(m_session,
-            string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\",\"isPending\":\"", m_is_pending ,"\"}}"),
+        auto result = perform<get_transaction_params_tkn>(m_session, json,
             [self](const std::string& result) { self->on_get_trans_params(result); });
 
         m_result.pending = true;
@@ -346,6 +348,7 @@ void create_tx_token_base_handler::on_get_trans_params(const std::string& result
         }
         auto erc20_data = data_val.FindMember("erc20_data");
         CHK_PRM(erc20_data != data_val.MemberEnd(), "get transaction params: 'erc20_data' field not found")
+        CHK_PRM(!erc20_data->value.IsBool(), "get transaction params: incorrect 'erc20_data'")
         if (erc20_data->value.IsString()) {
             m_data = erc20_data->value.GetString();
         }

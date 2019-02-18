@@ -20,6 +20,8 @@ int main(int argc, char* argv[])
 
         settings::read();
 
+        settings::system::debug_mode = true;
+
         po::options_description desc("Allowed options");
         desc.add_options()
             ("help",                                            "produce help message")
