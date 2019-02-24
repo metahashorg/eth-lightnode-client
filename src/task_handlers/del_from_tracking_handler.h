@@ -16,6 +16,9 @@ public:
     del_from_tracking_handler(http_session_ptr session);
     virtual ~del_from_tracking_handler() override;
 
+    virtual void execute() override;
+    virtual void execute(handler_callback callback) override;
+
 protected:
     virtual bool prepare_params() override;
 
@@ -28,6 +31,7 @@ private:
     std::mutex  m_locker;
     std::string m_address;
     status_code m_status[2] = {status_code::scUndefined};
+    std::string_view m_group;
 };
 
 #endif // _DEL_FROM_TRACKING_HANDLER_H_

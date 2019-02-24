@@ -25,18 +25,17 @@ bool get_addresses_to_batch::prepare_params()
         m_writer.add("method", "batch.addresses");
         m_writer.add("token", settings::service::token);
 
-        params = m_writer.get_params();
-        params->SetArray();
-
         rapidjson::Value obj(rapidjson::kObjectType);
 
         obj.AddMember("currency",
                       rapidjson::Value().SetInt(settings::service::coin_key),
                       m_writer.get_allocator());
-
         obj.AddMember("group",
                       rapidjson::Value().SetString(group.data(), static_cast<unsigned>(group.size()), m_writer.get_allocator()),
                       m_writer.get_allocator());
+
+        params = m_writer.get_params();
+        params->SetArray();
 
         params->PushBack(obj, m_writer.get_allocator());
 

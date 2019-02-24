@@ -9,10 +9,10 @@ create_tx_token_handler::create_tx_token_handler(http_session_ptr session)
 create_tx_token_handler::~create_tx_token_handler() {
 }
 
-void create_tx_token_handler::execute()
+void create_tx_token_handler::send_request()
 {
     // do nothing, just prepare
-    this->m_writer.set_result(rapidjson::Value().SetString("ok"));
+    m_writer.set_result(rapidjson::Value().SetString("ok"));
     send_response();
     return;
 }

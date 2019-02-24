@@ -46,6 +46,9 @@ namespace storage
         static const std::string_view group() {
             return _group;
         }
+        static void group(const std::string& value) {
+            _group = value;;
+        }
 
         static last_blocks get_last_blocks();
         static void set_last_blocks(const addresses::last_blocks& prev, const addresses::last_blocks& vals);

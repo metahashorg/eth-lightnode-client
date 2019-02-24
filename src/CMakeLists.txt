@@ -4,7 +4,10 @@ find_library(BOOST1 NAMES libboost_filesystem.a HINTS ${BOOST_LIBS_LIBS})
 find_library(BOOST2 NAMES libboost_program_options.a HINTS ${BOOST_LIBS_LIBS})
 find_library(BOOST3 NAMES libboost_system.a HINTS ${BOOST_LIBS_LIBS})
 
-set(ETH_SOURCES 
+# for using in other cmake's
+set(OBJECT_FILES_DIR "${CMAKE_CURRENT_BINARY_DIR}${CMAKE_FILES_DIRECTORY}/${PROJECT_NAME}.dir" PARENT_SCOPE)
+
+set(ETH_SOURCES
     ethtx/crossguid/Guid.cpp
     ethtx/scrypt/crypto_scrypt-nosse.cpp
     ethtx/scrypt/crypto_scrypt_saltgen.cpp
@@ -111,7 +114,7 @@ target_link_libraries(${PROJECT_NAME} ${LIB_CRYPTO} ${LIB_SSL} ${LIB_LEVELDB} ${
 
 #include_directories(../3rd_party/leveldb/include/)
 
-set (CMAKE_CXX_FLAGS "-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -pthread -Ofast -Wall -Wextra -Werror -Wno-unused-parameter -Wfloat-equal")
+#set (CMAKE_CXX_FLAGS "-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -pthread -Ofast -Wall -Wextra -Werror -Wno-unused-parameter -Wfloat-equal")
 
 target_compile_options(${PROJECT_NAME} PRIVATE -no-pie -D_GLIBCXX_USE_CXX11_ABI=0)
 set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-no-pie -D_GLIBCXX_USE_CXX11_ABI=0")

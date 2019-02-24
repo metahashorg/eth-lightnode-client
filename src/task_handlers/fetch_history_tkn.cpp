@@ -27,17 +27,17 @@ bool fetch_history_tkn::prepare_params()
         auto params = m_reader.get_params();
         CHK_PRM(params, "params field not found")
 
-        std::string addr;
+        std::string_view addr;
         CHK_PRM(m_reader.get_value(*params, "address", addr), "address field not found")
         CHK_PRM(!addr.empty(), "address is empty")
         CHK_PRM(addr.compare(0, 2, "0x") == 0, "address field incorrect format")
-        std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
+        //std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
 
-        std::string contract;
+        std::string_view contract;
         CHK_PRM(m_reader.get_value(*params, "contract", contract), "contract field not found")
         CHK_PRM(!contract.empty(), "contract is empty")
         CHK_PRM(contract.compare(0, 2, "0x") == 0, "contract field incorrect format")
-        std::transform(contract.begin(), contract.end(), contract.begin(), ::tolower);
+        //std::transform(contract.begin(), contract.end(), contract.begin(), ::tolower);
 
         /*
         bool local = false;
@@ -137,12 +137,13 @@ bool fetch_history_tkn::prepare_params()
         params->SetArray();
 
         rapidjson::Value obj(rapidjson::kObjectType);
+
         obj.AddMember("currency", settings::service::coin_key, m_writer.get_allocator());
         obj.AddMember("address",
-                      rapidjson::Value(addr.c_str(), static_cast<unsigned>(addr.size()), m_writer.get_allocator()),
+                      rapidjson::Value(addr.data(), static_cast<unsigned>(addr.size()), m_writer.get_allocator()),
                       m_writer.get_allocator());
         obj.AddMember("contract",
-                      rapidjson::Value(contract.c_str(), static_cast<unsigned>(contract.size()), m_writer.get_allocator()),
+                      rapidjson::Value(contract.data(), static_cast<unsigned>(contract.size()), m_writer.get_allocator()),
                       m_writer.get_allocator());
 
         params->PushBack(obj, m_writer.get_allocator());

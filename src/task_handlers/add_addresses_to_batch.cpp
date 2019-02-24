@@ -25,8 +25,10 @@ bool add_addresses_to_batch::prepare_params()
         CHK_PRM(m_reader.get_value(*params, "group", group), "group field not found")
         CHK_PRM(!group.empty(), "group is empty")
         
-        auto data = params->FindMember("address");
-        CHK_PRM(data != params->MemberEnd(), "get transaction params: 'address' field not found")
+        std::string_view addr;
+        CHK_PRM(m_reader.get_value(*params, "address", addr), "address field not found")
+        CHK_PRM(!addr.empty(), "address is empty")
+        CHK_PRM(addr.compare(0, 2, "0x") == 0, "address field incorrect format")
 
         m_writer.add("method", "batch.addresses.add");
         m_writer.add("token", settings::service::token);
@@ -36,13 +38,13 @@ bool add_addresses_to_batch::prepare_params()
         obj.AddMember("currency",
                       rapidjson::Value().SetInt(settings::service::coin_key),
                       m_writer.get_allocator());
-        
-        rapidjson::Value& data_val = data->value;
-        
+
         obj.AddMember("group",
-                      rapidjson::Value().SetString(group.data(), static_cast<unsigned>(group.size()), m_writer.get_allocator())
-                      , m_writer.get_allocator());
-        obj.AddMember("address", data_val, m_writer.get_allocator());
+                      rapidjson::Value().SetString(group.data(), static_cast<unsigned>(group.size()), m_writer.get_allocator()),
+                      m_writer.get_allocator());
+        obj.AddMember("address",
+                      rapidjson::Value().SetString(addr.data(), static_cast<unsigned>(addr.size()), m_writer.get_allocator()),
+                      m_writer.get_allocator());
 
         params = m_writer.get_params();
         params->SetArray();

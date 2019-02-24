@@ -25,12 +25,13 @@ bool fetch_balance_tkn::prepare_params()
         auto params = m_reader.get_params();
         CHK_PRM(params, "params field not found")
 
-        std::string addr;
+        std::string_view addr;
         CHK_PRM(m_reader.get_value(*params, "address", addr), "address field not found")
         CHK_PRM(!addr.empty(), "address is empty")
         CHK_PRM(addr.compare(0, 2, "0x") == 0, "address field incorrect format")
 
-        std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
+        //std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
+
         /*
         bool local = false;
         if (m_reader.get_value(*params, "local", local)) {
@@ -108,7 +109,7 @@ bool fetch_balance_tkn::prepare_params()
 
         obj.AddMember("currency", settings::service::coin_key, m_writer.get_allocator());
         obj.AddMember("address",
-                      rapidjson::Value(addr.c_str(), static_cast<unsigned>(addr.size()), m_writer.get_allocator()),
+                      rapidjson::Value(addr.data(), static_cast<unsigned>(addr.size()), m_writer.get_allocator()),
                       m_writer.get_allocator());
 
         params->PushBack(obj, m_writer.get_allocator());

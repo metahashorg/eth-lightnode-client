@@ -28,31 +28,45 @@ bool del_from_tracking_handler::prepare_params()
 
         CHK_PRM(m_reader.get_value(*params, "address", m_address), "address field not found")
         CHK_PRM(!m_address.empty(), "address field is empty")
+        CHK_PRM(m_address.compare(0, 2, "0x") == 0, "address field incorrect format")
 
         std::transform(m_address.begin(), m_address.end(), m_address.begin(), ::tolower);
 
-        std::string_view group = storage::addresses::group();
-        CHK_PRM(!group.empty(), "group id was not defined");
+        m_group = storage::addresses::group();
+        CHK_PRM(!m_group.empty(), "group id was not defined");
         CHK_PRM(storage::addresses::check(m_address), "address has been missing in tracking list");
         CHK_PRM(storage::addresses::remove(m_address), "could not remove address");
 
-        std::string json = string_utils::str_concat("{\"id\":1, \"params\":{\"group\":\"", group, "\", \"address\":\"", m_address ,"\"}}");
+        return true;
+    }
+    END_TRY_RET(false)
+}
+
+void del_from_tracking_handler::execute()
+{
+    BGN_TRY
+    {
+        m_result.pending = true;
+        std::string json = string_utils::str_concat("{\"id\":1, \"params\":{\"group\":\"", m_group, "\", \"address\":\"", m_address ,"\"}}");
 
         auto self = shared_from(this);
         auto result = perform<del_addresses_to_batch>(m_session, json,
-                                                      [self](const std::string& result) { self->on_batch_complete(result); });
+            [self](const std::string& result) { self->on_batch_complete(result); });
 
-        CHK_PRM(result.pending, "Failed on send 'del address from batch'");
+        CHK_PRM(result.pending, "Failed on send 'add address to batch'");
 
         result = perform<del_addresses_to_batch_tkn>(m_session, json,
-                    [self](const std::string& result) { self->on_batch_tkn_complete(result); });
+            [self](const std::string& result) { self->on_batch_tkn_complete(result); });
 
-        CHK_PRM(result.pending, "Failed on send 'del address from batch token'");
-
-        m_result.pending = true;
-        return false;
+        CHK_PRM(result.pending, "Failed on send 'add address to batch token'");
     }
-    END_TRY_RET(false)
+    END_TRY_PARAM(send_response())
+}
+
+void del_from_tracking_handler::execute(handler_callback callback)
+{
+    // TODO add if need
+    CHK_PRM(false, "Not implement")
 }
 
 void del_from_tracking_handler::on_batch_complete(const std::string& param) {

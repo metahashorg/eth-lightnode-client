@@ -35,7 +35,6 @@ bool batch_balance::prepare_params()
         obj.AddMember("currency",
                       rapidjson::Value().SetInt(settings::service::coin_key),
                       m_writer.get_allocator());
-
         obj.AddMember("group",
                       rapidjson::Value().SetString(group.data(), static_cast<unsigned>(group.size()), m_writer.get_allocator()),
                       m_writer.get_allocator());

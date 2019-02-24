@@ -116,15 +116,18 @@ void base_network_handler::on_complete_clbk()
 
         process_response(m_id, reader);
 
-        boost::asio::post(boost::bind(m_callback, m_writer.stringify()));
+//        boost::asio::post(boost::bind(m_callback, m_writer.stringify()));
+        m_callback(m_writer.stringify());
         m_callback = nullptr;
     }
     END_TRY_PARAM(
-                boost::asio::post(boost::bind(m_callback, m_writer.stringify()));
+//                boost::asio::post(boost::bind(m_callback, m_writer.stringify()));
+                m_callback(m_writer.stringify());
                 m_callback = nullptr;)
 }
 
 void base_network_handler::send_response()
 {
-    boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify()));
+    //boost::asio::post(boost::bind(&http_session::send_json, m_session, m_writer.stringify()));
+    m_session->send_json(m_writer.stringify());
 }

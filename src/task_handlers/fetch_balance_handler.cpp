@@ -51,13 +51,14 @@ bool fetch_balance_handler::prepare_params()
                 CHK_PRM(reader.parse(db_res.c_str()), "failed on parse balance from database");
                 CHK_PRM(reader.get_doc().IsArray(), "balance from db has incorrect type");
 
+                std::string_view address;
                 if (reader.get_doc().Size() > 0) {
                     for (const auto& v: reader.get_doc().GetArray()) {
                         auto tmp = v.FindMember("address");
                         if (tmp == v.MemberEnd()) {
                             continue;
                         }
-                        addr = tmp->value.GetString();
+                        address = tmp->value.GetString();
                         common::BigFloat v1(0.0), v2(0.0);
                         tmp = v.FindMember("received");
                         if (tmp != v.MemberEnd()) {
@@ -72,7 +73,7 @@ bool fetch_balance_handler::prepare_params()
 
                         rapidjson::Value obj(rapidjson::kObjectType);
                         obj.AddMember("address",
-                                      rapidjson::Value(addr.data(), static_cast<unsigned>(addr.size()), m_writer.get_allocator()),
+                                      rapidjson::Value(address.data(), static_cast<unsigned>(address.size()), m_writer.get_allocator()),
                                       m_writer.get_allocator());
                         obj.AddMember("balance", rapidjson::Value(buf, static_cast<unsigned>(strlen(buf)), m_writer.get_allocator()),
                                       m_writer.get_allocator());
@@ -94,6 +95,7 @@ bool fetch_balance_handler::prepare_params()
             m_writer.reset();
             m_writer.set_id(m_id);
             m_writer.set_result(rapidjson::Value("OK", m_writer.get_allocator()));
+            m_writer.add_result("local", true);
             m_writer.add_value("data", data_arr);
             return true;
         }

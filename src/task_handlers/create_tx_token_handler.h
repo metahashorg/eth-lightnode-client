@@ -9,7 +9,7 @@ public:
     create_tx_token_handler(http_session_ptr session);
     virtual ~create_tx_token_handler() override;
 
-    virtual void execute() override;
+    virtual void send_request() override;
 };
 
 #endif // CREATE_TX_TOKEN_HANDLER_H_

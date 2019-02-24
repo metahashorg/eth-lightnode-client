@@ -30,7 +30,7 @@ namespace storage
         }
         if (!fs_utils::dir::is_exists(settings::system::data_storage.c_str())) {
             if (!fs_utils::dir::create(settings::system::data_storage.c_str())) {
-                LOG_ERR("storage::address::read_file: Could not create data storage path");
+                LOG_ERR("storage::address::read_file: Could not create data storage path %s: %s", settings::system::data_storage.c_str(), strerror(errno));
                 return false;
             }
         }
@@ -38,7 +38,7 @@ namespace storage
         std::string path = string_utils::str_concat(settings::system::data_storage, "/addresses");
         if (!fs_utils::dir::is_exists(path.c_str())) {
             if (!fs_utils::dir::create(path.c_str())) {
-                LOG_ERR("storage::address::read_file: Could not create adresses path");
+                LOG_ERR("storage::address::read_file: Could not create adresses path %s: %s", path.c_str(), strerror(errno));
                 return false;
             }
         }
@@ -49,7 +49,7 @@ namespace storage
         if (!fs.is_open()) {
             fs.open(path.c_str(), std::fstream::out);
             if (!fs.is_open()) {
-                LOG_ERR("storage::address::read_file: Could not open tracking file: %s", strerror(errno));
+                LOG_ERR("storage::address::read_file: Could not open tracking file %s: %s", path.c_str(), strerror(errno));
                 return false;
             }
             fs << "{}";
@@ -57,7 +57,7 @@ namespace storage
             fs.close();
             fs.open(path.c_str());
             if (!fs.is_open()) {
-                LOG_ERR("storage::address::read_file: Could not open tracking file: %s", strerror(errno));
+                LOG_ERR("storage::address::read_file: Could not open tracking file %s: %s", path.c_str(), strerror(errno));
                 return false;
             }
         }
@@ -82,14 +82,14 @@ namespace storage
         }
         if (!fs_utils::dir::is_exists(settings::system::data_storage.c_str())) {
             if (!fs_utils::dir::create(settings::system::data_storage.c_str())) {
-                LOG_ERR("storage::address::read_file: Could not create data storage path");
+                LOG_ERR("storage::address::read_file: Could not create data storage path %s: %s", settings::system::data_storage.c_str(), strerror(errno));
                 return false;
             }
         }
         std::string path = string_utils::str_concat(settings::system::data_storage, "/addresses");
         if (!fs_utils::dir::is_exists(path.c_str())) {
             if (!fs_utils::dir::create(path.c_str())) {
-                LOG_ERR("storage::address::read_file: Could not create adresses path");
+                LOG_ERR("storage::address::read_file: Could not create adresses path %s: %s", path.c_str(), strerror(errno));
                 return false;
             }
         }
@@ -99,7 +99,7 @@ namespace storage
 
         fs.open(path.c_str(), std::ios::out);
         if (!fs.is_open()) {
-            LOG_ERR("storage::address::write_file: Could not open tracking file: %s", strerror(errno));
+            LOG_ERR("storage::address::write_file: Could not open tracking file %s: %s", path.c_str(), strerror(errno));
             return false;
         }
 
@@ -211,7 +211,7 @@ namespace storage
         std::lock_guard<std::mutex> guard(_locker);
 
         if (std::find(_storage.begin(), _storage.end(), address) != _storage.end()) {
-            LOG_WRN("storage::address::store: Address %s is exists");
+            LOG_WRN("storage::address::store: Address %s is exists", address.c_str());
             return false;
         }
 

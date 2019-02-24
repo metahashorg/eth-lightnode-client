@@ -8,7 +8,7 @@ create_tx_handler::create_tx_handler(http_session_ptr session)
 create_tx_handler::~create_tx_handler() {
 }
 
-void create_tx_handler::execute()
+void create_tx_handler::send_request()
 {
     // do nothing, just prepare
     m_writer.set_result(rapidjson::Value().SetString("ok"));
