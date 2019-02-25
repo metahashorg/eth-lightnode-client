@@ -30,7 +30,8 @@ namespace storage
         }
         if (!fs_utils::dir::is_exists(settings::system::data_storage.c_str())) {
             if (!fs_utils::dir::create(settings::system::data_storage.c_str())) {
-                LOG_ERR("storage::address::read_file: Could not create data storage path %s: %s", settings::system::data_storage.c_str(), strerror(errno));
+                LOG_ERR("storage::address::read_file: Could not create data storage path %s: %s",
+                        settings::system::data_storage.c_str(), strerror(errno));
                 return false;
             }
         }
@@ -205,9 +206,13 @@ namespace storage
                 _storage.emplace_back(str);
             }
         }
+
+        LOG_INF("storage::address::init: group=%s, addresses=%u, last.balance=%u, last.history=%u, last.tkn.balance=%u, last.tkn.history=%u",
+                _group.c_str(), _storage.size(), m_last_blocks.balance, m_last_blocks.history,
+                m_last_blocks.tkn_balance, m_last_blocks.tkn_history);
     }
 
-    bool addresses::store(const std::string& address) {
+    bool addresses::store(const std::string& address, bool reset) {
         std::lock_guard<std::mutex> guard(_locker);
 
         if (std::find(_storage.begin(), _storage.end(), address) != _storage.end()) {
@@ -228,32 +233,35 @@ namespace storage
         }
         addresses->value.PushBack(rapidjson::Value().SetString(address.c_str(), doc.GetAllocator()), doc.GetAllocator());
 
-        m_last_blocks = last_blocks();
+        if (reset) {
+            m_last_blocks = last_blocks();
 
-        auto tmp = doc.FindMember("balance-lastblock");
-        if (tmp == doc.MemberEnd()) {
-            doc.AddMember("balance-lastblock", rapidjson::Type::kNumberType, doc.GetAllocator());
-            tmp = doc.FindMember("balance-lastblock");
-        }
-        tmp->value.SetUint64(m_last_blocks.balance);
-        tmp = doc.FindMember("history-lastblock");
-        if (tmp == doc.MemberEnd()) {
-            doc.AddMember("history-lastblock", rapidjson::Type::kNumberType, doc.GetAllocator());
+            auto tmp = doc.FindMember("balance-lastblock");
+            if (tmp == doc.MemberEnd()) {
+                doc.AddMember("balance-lastblock", rapidjson::Type::kNumberType, doc.GetAllocator());
+                tmp = doc.FindMember("balance-lastblock");
+            }
+            tmp->value.SetUint64(m_last_blocks.balance);
             tmp = doc.FindMember("history-lastblock");
-        }
-        tmp->value.SetUint64(m_last_blocks.history);
-        tmp = doc.FindMember("balance-tkn-lastblock");
-        if (tmp == doc.MemberEnd()) {
-            doc.AddMember("balance-tkn-lastblock", rapidjson::Type::kNumberType, doc.GetAllocator());
+            if (tmp == doc.MemberEnd()) {
+                doc.AddMember("history-lastblock", rapidjson::Type::kNumberType, doc.GetAllocator());
+                tmp = doc.FindMember("history-lastblock");
+            }
+            tmp->value.SetUint64(m_last_blocks.history);
             tmp = doc.FindMember("balance-tkn-lastblock");
-        }
-        tmp->value.SetUint64(m_last_blocks.tkn_balance);
-        tmp = doc.FindMember("history-tkn-lastblock");
-        if (tmp == doc.MemberEnd()) {
-            doc.AddMember("history-tkn-lastblock", rapidjson::Type::kNumberType, doc.GetAllocator());
+            if (tmp == doc.MemberEnd()) {
+                doc.AddMember("balance-tkn-lastblock", rapidjson::Type::kNumberType, doc.GetAllocator());
+                tmp = doc.FindMember("balance-tkn-lastblock");
+            }
+            tmp->value.SetUint64(m_last_blocks.tkn_balance);
             tmp = doc.FindMember("history-tkn-lastblock");
+            if (tmp == doc.MemberEnd()) {
+                doc.AddMember("history-tkn-lastblock", rapidjson::Type::kNumberType, doc.GetAllocator());
+                tmp = doc.FindMember("history-tkn-lastblock");
+            }
+            tmp->value.SetUint64(m_last_blocks.tkn_history);
+            LOG_INF("storage::address::store: Blocks has been reseted");
         }
-        tmp->value.SetUint64(m_last_blocks.tkn_history);
 
         if (!write_file(doc)) {
             LOG_WRN("storage::address::store: Could not rewrite tracking file");
@@ -261,6 +269,8 @@ namespace storage
         }
 
         _storage.push_back(address);
+        LOG_INF("storage::address::store: Address %s has been added", address.c_str());
+
         return true;
     }
 
@@ -298,6 +308,7 @@ namespace storage
         }
 
         _storage.erase(pos);
+        LOG_INF("storage::address::remove: Address %s has been removed", address.c_str());
 
         return true;
     }
@@ -329,7 +340,15 @@ namespace storage
     void addresses::set_last_blocks(const addresses::last_blocks& prev, const addresses::last_blocks& vals) {
         std::lock_guard<std::mutex> guard(_locker);
         if (m_last_blocks == prev) {
+            if (m_last_blocks == vals) {
+                return;
+            }
+
             m_last_blocks = vals;
+
+            LOG_INF("storage::address::set_last_blocks: Blocks was updated. last.balance=%u, last.history=%u, last.tkn.balance=%u, last.tkn.history=%u",
+                    m_last_blocks.balance, m_last_blocks.history, m_last_blocks.tkn_balance, m_last_blocks.tkn_history);
+
             rapidjson::Document doc;
             if (!read_file(doc)) {
                 return;

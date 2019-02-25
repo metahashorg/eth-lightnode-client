@@ -28,6 +28,7 @@ protected:
     void on_complete();
 
 private:
+    bool        m_reset = {true};
     std::mutex  m_locker;
     std::string m_address;
     status_code m_status[2] = {status_code::scUndefined};

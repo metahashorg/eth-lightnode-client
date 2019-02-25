@@ -56,7 +56,8 @@ namespace storage
         CHK_PRM_BOOL(tmp, "storage::updater::prepare: Could not recieve result from batch.addresses")
 
         data = reader.get("data", reader.get_doc());
-        CHK_PRM_BOOL(tmp, "storage::updater::prepare: Data field not found in batch.addresses result")
+        CHK_PRM_BOOL(data, "storage::updater::prepare: Data field not found in batch.addresses result")
+        CHK_PRM_BOOL(data->IsArray(), "storage::updater::prepare: Data field in batch.addresses result has incorrect format. Array expected.")
 
         addresses::storage_type list = addresses::snapshot();
 

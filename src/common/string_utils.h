@@ -56,6 +56,33 @@ std::string str_concat(const T1& v1, const T2& v2, const T3& v3, const T4& v4, c
     return res;
 }
 
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6>
+std::string str_concat(const T1& v1, const T2& v2, const T3& v3, const T4& v4, const T5& v5, const T6& v6) noexcept {
+    std::string res;
+    res.reserve(get_size(v1) + get_size(v2) + get_size(v3) + get_size(v4) + get_size(v5) + get_size(v6));
+    res.append(v1);
+    res.append(v2);
+    res.append(v3);
+    res.append(v4);
+    res.append(v5);
+    res.append(v6);
+    return res;
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
+std::string str_concat(const T1& v1, const T2& v2, const T3& v3, const T4& v4, const T5& v5, const T6& v6, const T7& v7) noexcept {
+    std::string res;
+    res.reserve(get_size(v1) + get_size(v2) + get_size(v3) + get_size(v4) + get_size(v5) + get_size(v6) + get_size(v7));
+    res.append(v1);
+    res.append(v2);
+    res.append(v3);
+    res.append(v4);
+    res.append(v5);
+    res.append(v6);
+    res.append(v7);
+    return res;
+}
+
 template <typename T1, typename T2>
 void str_append(std::string& res, const T1& v1, const T2& v2) noexcept {
     size_t sz = get_size(v1) + get_size(v2);
@@ -101,6 +128,21 @@ void str_append(std::string& res, const T1& v1, const T2& v2, const T3& v3, cons
     res.append(v3);
     res.append(v4);
     res.append(v5);
+}
+
+template <typename T1, typename T2, typename T3, typename T4, typename T5, typename T6, typename T7>
+void str_append(std::string& res, const T1& v1, const T2& v2, const T3& v3, const T4& v4, const T5& v5, const T6& v6, const T7& v7) noexcept {
+    size_t sz = get_size(v1) + get_size(v2) + get_size(v3) + get_size(v4) + get_size(v5) + get_size(v6)+ get_size(v7);
+    if (res.capacity() < sz) {
+        res.reserve(sz);
+    }
+    res.append(v1);
+    res.append(v2);
+    res.append(v3);
+    res.append(v4);
+    res.append(v5);
+    res.append(v6);
+    res.append(v7);
 }
 
 void bin2hex(const unsigned char* buf, size_t size, char* res) noexcept;

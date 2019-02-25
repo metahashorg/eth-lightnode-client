@@ -36,6 +36,8 @@ bool add_to_tracking_handler::prepare_params()
         CHK_PRM(!m_group.empty(), "group id was not defined");
         CHK_PRM(!storage::addresses::check(m_address), "address has added already");
 
+        m_reader.get_value(*params, "reset", m_reset);
+
         return true;
     }
     END_TRY_RET(false)
@@ -145,7 +147,7 @@ void add_to_tracking_handler::on_complete() {
         m_writer.reset();
         if (m_status[0] == status_code::scTrue &&
             m_status[1] == status_code::scTrue) {
-            if (!storage::addresses::store(m_address)) {
+            if (!storage::addresses::store(m_address, m_reset)) {
                 m_writer.set_error(rapidjson::Value().SetString("Could not store address in the storage"));
             } else {
                 m_writer.set_result(rapidjson::Value().SetString("OK"));

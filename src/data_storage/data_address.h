@@ -36,7 +36,7 @@ namespace storage
         addresses& operator = (const addresses&&) = delete;
 
         static void init();
-        static bool store(const std::string& address);
+        static bool store(const std::string& address, bool reset = true);
         static bool peek(size_t pos, std::string& result);
         static bool remove(const std::string& address);
         static bool check(const std::string& address);

@@ -76,6 +76,7 @@ private:
     std::string                         m_host;
     ssl::context                        m_ssl_ctx;
     ssl::stream<tcp::socket>            m_ssl_socket;
+    std::string                         m_id;
 };
 
 #endif // __HTTP_JSON_RPC_REQUEST_IMPL_H__

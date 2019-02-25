@@ -44,7 +44,7 @@ asio::io_context& http_session::get_io_context()
 
 void http_session::process_request()
 {
-    LOG_DBG("http session: %s >>> %s", m_socket.remote_endpoint().address().to_string().c_str(), m_req.body().c_str());
+    LOG_DBG("HTTP Session: %s >>> %s", m_socket.remote_endpoint().address().to_string().c_str(), m_req.body().c_str());
 
     switch(m_req.method()) {
     case http::verb::post:
@@ -81,7 +81,7 @@ void http_session::send_json(const std::string& data)
 
 void http_session::send_response(http::response<http::string_body>& response)
 {
-    LOG_DBG("http session: %s <<< %s", m_socket.remote_endpoint().address().to_string().c_str(), response.body().c_str());
+    LOG_DBG("HTTP Session: %s <<< %s", m_socket.remote_endpoint().address().to_string().c_str(), response.body().c_str());
 
     response.version(10);
     response.set(http::field::server, "eth.service");
@@ -105,7 +105,7 @@ void http_session::process_post_request()
     if (reader.parse(m_req.body().c_str())) {
         auto it = post_handlers.find(reader.get_method());
         if (it == post_handlers.end()) {
-            LOG_WRN("Incorrect service method %s", reader.get_method().c_str())
+            LOG_WRN("Incorrect service method %s", reader.get_method())
 
             writer.set_id(reader.get_id());
             writer.set_error(-32601, string_utils::str_concat("Method '", reader.get_method(), "' not found"));
@@ -119,7 +119,7 @@ void http_session::process_post_request()
         }
     } else {
         LOG_ERR("Incorrect json %u: %s", reader.get_parse_error().Code(), m_req.body().c_str())
-        writer.set_error(-32700, "Parse error");
+        writer.set_error(-32700, string_utils::str_concat("Json parse error: ", std::to_string(reader.get_parse_error().Code())));
         json = writer.stringify();
     }
 

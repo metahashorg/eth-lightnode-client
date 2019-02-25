@@ -120,7 +120,7 @@ bool fetch_history_handler::prepare_params()
                 arr.PushBack(obj.Move(), m_writer.get_allocator());
             }
             m_writer.set_result(rapidjson::Value("OK"));
-            m_writer.add_result("local", true);
+            m_writer.add("local", true);
             m_writer.add_value("data", arr);
             return true;
         }

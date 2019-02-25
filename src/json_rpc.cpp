@@ -68,16 +68,18 @@ json_rpc_id json_rpc_reader::get_id()
     return res;
 }
 
-std::string json_rpc_reader::get_method()
+const char* json_rpc_reader::get_method()
 {
-    std::string res;
-    get_value(m_doc, "method", res);
-    return res;
+    auto val = get("method", m_doc);
+    if (val != nullptr) {
+        return val->GetString();
+    }
+    return "";
 }
 
 rapidjson::Value* json_rpc_reader::get_error()
 {
-return get("error", m_doc);
+    return get("error", m_doc);
 }
 
 rapidjson::Value* json_rpc_reader::get_result()

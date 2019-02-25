@@ -48,10 +48,10 @@ void generate_handler::execute()
         std::transform(address.begin(), address.end(), address.begin(), ::tolower);
         m_writer.add_result("address", address);
         if (settings::service::local_data) {
-            perform<add_to_tracking_handler>(m_session, string_utils::str_concat("{\"id\":1, \"params\":{\"address\": \"", address, "\"}}"));
+            perform<add_to_tracking_handler>(m_session, string_utils::str_concat("{\"id\":1, \"params\":{\"address\": \"", address, "\", \"reset\":false}}"));
             m_result.pending = true;
         } else {
-            storage::addresses::store(address);
+            storage::addresses::store(address, false);
         }
     }
     END_TRY

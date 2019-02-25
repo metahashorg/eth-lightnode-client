@@ -37,7 +37,7 @@ public:
     inline bool	is_valid() const { return !m_error.IsError(); }
 
     json_rpc_id get_id();
-    std::string get_method();
+    const char* get_method();
     rapidjson::Value* get_error();
     rapidjson::Value* get_result();
     rapidjson::Value* get_params();

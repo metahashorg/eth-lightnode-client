@@ -49,7 +49,7 @@ namespace storage
         std::lock_guard<std::mutex> guard(_locker);
         _status = _db->Get(leveldb::ReadOptions(), string_utils::str_concat(address, "$hash_blns"), &result);
         if (!_status.ok()) {
-            LOG_WRN("storage::database: Could not get hash of balance for address \"%s\". Error: %s", address.data(), _status.ToString().c_str());
+            LOG_WRN("storage::database: Could not get hash for balance address \"%s\". Error: %s", address.data(), _status.ToString().c_str());
             return false;
         }
         return true;
@@ -59,7 +59,7 @@ namespace storage
         std::lock_guard<std::mutex> guard(_locker);
         _status = _db->Get(leveldb::ReadOptions(), string_utils::str_concat(address, "$hash_hist"), &result);
         if (!_status.ok()) {
-            LOG_WRN("storage::database: Could not get hash of history for address \"%s\". Error: %s", address.data(), _status.ToString().c_str());
+            LOG_WRN("storage::database: Could not get hash for history address \"%s\". Error: %s", address.data(), _status.ToString().c_str());
             return false;
         }
         return true;
@@ -69,7 +69,7 @@ namespace storage
         std::lock_guard<std::mutex> guard(_locker);
         _status = _db->Get(leveldb::ReadOptions(), string_utils::str_concat(address, "$hash_tkn_blns"), &result);
         if (!_status.ok()) {
-            LOG_WRN("storage::database: Could not get hash of balance for address \"%s\". Error: %s", address.data(), _status.ToString().c_str());
+            LOG_WRN("storage::database: Could not get hash for balance address \"%s\". Error: %s", address.data(), _status.ToString().c_str());
             return false;
         }
         return true;
@@ -79,7 +79,7 @@ namespace storage
         std::lock_guard<std::mutex> guard(_locker);
         _status = _db->Get(leveldb::ReadOptions(), string_utils::str_concat(address, "$hash_tkn_hist"), &result);
         if (!_status.ok()) {
-            LOG_WRN("storage::database: Could not get hash of history for address \"%s\". Error: %s", address.data(), _status.ToString().c_str());
+            LOG_WRN("storage::database: Could not get hash for history address \"%s\". Error: %s", address.data(), _status.ToString().c_str());
             return false;
         }
         return true;
@@ -104,7 +104,7 @@ namespace storage
         }
         _status = _db->Put(leveldb::WriteOptions(), string_utils::str_concat(address, "$hash_blns"), hash);
         if (!_status.ok()) {
-            LOG_WRN("storage::database: Could not save hash of balance for address \"%s\". Error: %s", address.data(), "\". Error: ", _status.ToString().c_str());
+            LOG_WRN("storage::database: Could not save hash for balance address \"%s\". Error: %s", address.data(), "\". Error: ", _status.ToString().c_str());
             return;
         }
     }
@@ -128,7 +128,7 @@ namespace storage
         }
         _status = _db->Put(leveldb::WriteOptions(), string_utils::str_concat(address, "$hash_hist"), hash);
         if (!_status.ok()) {
-            LOG_WRN("storage::database: Could not save hash of history for address \"%s\". Error: %s", address.data(), "\". Error: ", _status.ToString().c_str());
+            LOG_WRN("storage::database: Could not save hash for history address \"%s\". Error: %s", address.data(), "\". Error: ", _status.ToString().c_str());
             return;
         }
     }
@@ -151,7 +151,7 @@ namespace storage
         }
         _status = _db->Put(leveldb::WriteOptions(), string_utils::str_concat(address, "$hash_tkn_hist"), hash);
         if (!_status.ok()) {
-            LOG_WRN("storage::database: Could not save hash of token history for address \"%s\". Error: %s", address.data(), "\". Error: ", _status.ToString().c_str());
+            LOG_WRN("storage::database: Could not save hash for token history address \"%s\". Error: %s", address.data(), "\". Error: ", _status.ToString().c_str());
             return;
         }
     }
@@ -173,7 +173,7 @@ namespace storage
         }
         _status = _db->Put(leveldb::WriteOptions(), string_utils::str_concat(address, "$hash_tkn_blns"), hash);
         if (!_status.ok()) {
-            LOG_WRN("storage::database: Could not save hash of token balance for address \"%s\". Error: %s", address.data(), "\". Error: ", _status.ToString().c_str());
+            LOG_WRN("storage::database: Could not save hash for token balance address \"%s\". Error: %s", address.data(), "\". Error: ", _status.ToString().c_str());
             return;
         }
     }

@@ -95,7 +95,7 @@ bool fetch_balance_handler::prepare_params()
             m_writer.reset();
             m_writer.set_id(m_id);
             m_writer.set_result(rapidjson::Value("OK", m_writer.get_allocator()));
-            m_writer.add_result("local", true);
+            m_writer.add("local", true);
             m_writer.add_value("data", data_arr);
             return true;
         }
