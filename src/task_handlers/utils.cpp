@@ -28,20 +28,20 @@ namespace utils
             use_ssl = true;
         }
 
-        pos = tmp.find(":");
-        if (pos != std::string::npos)
-        {
-            port.clear();
-            port = tmp.substr(pos + 1);
-            tmp.remove_suffix(pos + 1);
-        }
-
         pos = tmp.find("/");
         if (pos != std::string::npos)
         {
             path.clear();
             path = tmp.substr(pos);
-            tmp.remove_suffix(pos + 1);
+            tmp.remove_suffix(tmp.size() - pos);
+        }
+
+        pos = tmp.find(":");
+        if (pos != std::string::npos)
+        {
+            port.clear();
+            port = tmp.substr(pos + 1);
+            tmp.remove_suffix(tmp.size() - pos);
         }
 
         host = tmp;
