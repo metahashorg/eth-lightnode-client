@@ -39,7 +39,7 @@ if (!(condition)) {\
 #define END_TRY_RET_PARAM(ret, param) \
     catch (TypedException& e)\
     {\
-        LOG_ERR("Exception \"%s\" in func %s", e.description.c_str(), __PRETTY_FUNCTION__)\
+        LOG_ERR("TypedException \"%s\" (%s : %u)", e.description.c_str(), __FILE__, __LINE__)\
         this->m_writer.reset();\
         this->m_writer.set_error(-32669, e.description);\
         param;\
@@ -47,7 +47,7 @@ if (!(condition)) {\
     }\
     catch (invalid_param& ex)\
     {\
-        LOG_ERR("Exception \"%s\" in func %s", ex.what().data(), __PRETTY_FUNCTION__)\
+        LOG_ERR("InvalidParam \"%s\" (%s : %u)", ex.what().data(), __FILE__, __LINE__)\
         this->m_writer.reset();\
         this->m_writer.set_error(-32668, ex.what().data());\
         param;\
@@ -55,7 +55,7 @@ if (!(condition)) {\
     }\
     catch (std::exception& ex)\
     {\
-        LOG_ERR("Exception \"%s\" in func %s", ex.what(), __PRETTY_FUNCTION__)\
+        LOG_ERR("STD Exception \"%s\" (%s : %u)", ex.what(), __FILE__, __LINE__)\
         this->m_writer.reset();\
         this->m_writer.set_error(-32667, ex.what());\
         param;\
@@ -63,7 +63,7 @@ if (!(condition)) {\
     }\
     catch(...)\
     {\
-        LOG_ERR("Unhandled exception in func %s", __PRETTY_FUNCTION__)\
+        LOG_ERR("Unknown exception (%s : %u)", __FILE__, __LINE__)\
         this->m_writer.reset();\
         this->m_writer.set_error(-32666, "Unhandled exception");\
         param;\

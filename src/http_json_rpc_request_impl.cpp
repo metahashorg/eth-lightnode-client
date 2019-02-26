@@ -85,7 +85,7 @@ bool http_json_rpc_request_impl::error_handler(const boost::system::error_code& 
     m_timer.stop();
     m_connect_timer.stop();
 
-    LOG_ERR("Json-rpc[%s] request error %d: %s", m_id.c_str(), e.value(), e.message().c_str())
+    LOG_ERR("Json-rpc[%s] Request error %d: %s", m_id.c_str(), e.value(), e.message().c_str())
 
     boost::system::error_code ec;
     if (m_socket.is_open())

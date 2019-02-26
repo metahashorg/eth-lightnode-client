@@ -127,7 +127,7 @@ namespace utils
             struct timeval end;
             gettimeofday(&end, NULL);
             long elapsed = ((end.tv_sec - m_start.tv_sec) * 1000) + (end.tv_usec / 1000 - m_start.tv_usec / 1000);
-            LOG_DBG("%s: %lu milisec", m_msg.c_str(), elapsed);
+            LOG_DBG("%s %lu millisec", m_msg.c_str(), elapsed);
         }
     }
 }
