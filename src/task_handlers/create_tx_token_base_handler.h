@@ -11,16 +11,6 @@ class EthWallet;
 
 class create_tx_token_base_handler : public base_network_handler
 {
-    enum class job {
-        balance,
-        params
-    };
-
-    enum class job_status {
-        undefined = -1,
-        completed
-    };
-
 public:
     create_tx_token_base_handler(http_session_ptr session);
     virtual ~create_tx_token_base_handler() override;
@@ -33,6 +23,7 @@ protected:
     virtual void send_request();
 
 private:
+    void send_get_trans_params();
     void on_get_trans_params(const std::string& result);
     void on_get_balance(const std::string& result);
     void on_complete_job();
@@ -54,8 +45,6 @@ protected:
     std::string                 m_gas_limit;
     std::string                 m_data;
     std::string                 m_is_pending;
-    job_status                  m_jobs[2] = {job_status::undefined, job_status::undefined};
-    std::mutex                  m_locker;
 };
 
 #endif // CREATE_TX_TOKEN_BASE_HANDLER_H_

@@ -57,6 +57,7 @@ void base_network_handler::execute(handler_callback callback)
 
         m_callback = callback;
         m_async_execute = true;
+        m_result.pending = true;
 
         m_request->execute_async(boost::bind(&base_network_handler::on_complete_clbk, shared_from(this)));
     }

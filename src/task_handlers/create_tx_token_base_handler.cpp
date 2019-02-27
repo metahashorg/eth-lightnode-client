@@ -64,7 +64,6 @@ bool create_tx_token_base_handler::prepare_params()
 
         if (!m_all_value) {
             CHK_PRM(json_utils::val2hex(jValue, m_value), "value field incorrect format")
-            m_jobs[static_cast<int>(job::balance)] = job_status::completed;
         }
         
         jValue = m_reader.get("isPending", *params);
@@ -92,15 +91,10 @@ void create_tx_token_base_handler::execute()
                 string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\"}}"),
                 [self](const std::string& result) { self->on_get_balance(result); });
             CHK_PRM(res.pending, "Failed on send 'fetch-balance-tkn'");
+            return;
         }
 
-        std::string json = string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\",\"to_address\":\"", m_to ,"\",\"value\":\"");
-        string_utils::str_append(json, m_value, "\",\"isPending\":\"", m_is_pending ,"\"}}");
-
-        res = perform<get_transaction_params_tkn>(m_session, json,
-            [self](const std::string& result) { self->on_get_trans_params(result); });
-        CHK_PRM(res.pending, "Failed on send 'get-transaction-params-tkn'");
-
+        send_get_trans_params();
     }
     END_TRY_PARAM(send_response())
 }
@@ -137,10 +131,6 @@ void create_tx_token_base_handler::on_get_balance(const std::string& result)
 {
     BGN_TRY
     {
-        std::lock_guard<std::mutex> lock(m_locker);
-
-        m_jobs[static_cast<int>(job::balance)] = job_status::completed;
-
         if (!check_json(result)) {
             send_response();
             return;
@@ -152,43 +142,62 @@ void create_tx_token_base_handler::on_get_balance(const std::string& result)
         std::string balance;
         auto data = reader.get("data", reader.get_doc());
         CHK_PRM(data, "get balance: 'data' field not found")
-        if (data->IsArray()) {
-            for (auto& v: data->GetArray()) {
-                std::string addr;
-                if (!reader.get_value(v, "address", addr))
-                    continue;
-                std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
-                if (addr.compare(m_address) != 0)
-                    continue;
+        CHK_PRM(data->IsArray(), "get balance: 'data' field type is not array")
+        CHK_PRM(data->Size(), "get balance: no tokens found")
+        for (auto& v: data->GetArray()) {
+            std::string addr;
+            if (!reader.get_value(v, "address", addr))
+                continue;
+            std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
+            if (addr.compare(m_address) != 0)
+                continue;
+
+            std::string ico_address;
+            if (!reader.get_value(v, "ico_address", ico_address))
+                continue;
+            std::transform(ico_address.begin(), ico_address.end(), ico_address.begin(), ::tolower);
+            if (ico_address.compare(m_token) != 0)
+                continue;
                 
-                std::string ico_address;
-                if (!reader.get_value(v, "ico_address", ico_address))
-                    continue;
-                std::transform(ico_address.begin(), ico_address.end(), ico_address.begin(), ::tolower);
-                if (ico_address.compare(m_token) != 0)
-                    continue;
+            std::string received;
+            CHK_PRM(reader.get_value(v, "received", received), "get received: 'received' field not found")
                 
-                std::string received;
-                CHK_PRM(reader.get_value(v, "received", received), "get received: 'received' field not found")
+            std::string spent;
+            CHK_PRM(reader.get_value(v, "spent", spent), "get received: 'spent' field not found")
                 
-                std::string spent;
-                CHK_PRM(reader.get_value(v, "spent", spent), "get received: 'spent' field not found")
-                
-                mpz_class mpzReceived;
-                mpzReceived.set_str(received, 10);
-                mpz_class mpzSpent;
-                mpzSpent.set_str(spent, 10);
-                mpz_class result = mpzReceived - mpzSpent;
-                m_value = result.get_str(16);
-                m_value.insert(0, "0x");
-                
-                break;
-            }
-        } else {
-            CHK_PRM(false, "get balance: 'balance' field type not supported by service")
+            mpz_class mpzReceived;
+            mpzReceived.set_str(received, 10);
+            mpz_class mpzSpent;
+            mpzSpent.set_str(spent, 10);
+            mpz_class result = mpzReceived - mpzSpent;
+            m_value = result.get_str(16);
+            m_value.insert(0, "0x");
+
+            break;
         }
-        
-        on_complete_job();
+        CHK_PRM(!m_value.empty(), "get balance: balance for token not found")
+
+        send_get_trans_params();
+    }
+    END_TRY_PARAM(send_response())
+}
+
+void create_tx_token_base_handler::send_get_trans_params()
+{
+    BGN_TRY
+    {
+        auto self = shared_from(this);
+        handler_result res;
+
+        CHK_PRM(!m_value.empty(), "'value' is empty")
+
+        std::string json = string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\",\"to_address\":\"", m_to ,"\",\"value\":\"");
+        string_utils::str_append(json, m_value, "\",\"isPending\":\"", m_is_pending ,"\"}}");
+
+        res = perform<get_transaction_params_tkn>(m_session, json,
+            [self](const std::string& result) { self->on_get_trans_params(result); });
+        CHK_PRM(res.pending, "Failed on send 'get-transaction-params-tkn'");
+
     }
     END_TRY_PARAM(send_response())
 }
@@ -197,10 +206,6 @@ void create_tx_token_base_handler::on_get_trans_params(const std::string& result
 {
     BGN_TRY
     {
-        std::lock_guard<std::mutex> lock(m_locker);
-
-        m_jobs[static_cast<int>(job::params)] = job_status::completed;
-
         if (!check_json(result)) {
             send_response();
             return;
@@ -260,11 +265,6 @@ void create_tx_token_base_handler::on_complete_job()
 {
     BGN_TRY
     {
-        if (m_jobs[static_cast<int>(job::balance)] != job_status::completed ||
-            m_jobs[static_cast<int>(job::params)] != job_status::completed) {
-            return;
-        }
-
         if (!m_auto_fee)
         {
             std::string lim = m_gas_limit;

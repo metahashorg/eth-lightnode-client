@@ -42,11 +42,11 @@ void status_handler::execute()
             m_writer.add_result("service::coin_key", settings::service::coin_key);
             m_writer.add_result("service::gas_price_max", settings::service::gas_price_max.get_str());
             m_writer.add_result("service::gas_price_min", settings::service::gas_price_min.get_str());
-            m_writer.add_result("service::data_storage", settings::system::data_storage);
-            m_writer.add_result("service::wallet_stotage", settings::system::wallet_stotage);
-            m_writer.add_result("service::debug_mode", settings::system::debug_mode);
-            m_writer.add_result("service::jrpc_conn_timeout", settings::system::jrpc_conn_timeout);
-            m_writer.add_result("service::jrpc_timeout", settings::system::jrpc_timeout);
+            m_writer.add_result("system::data_storage", settings::system::data_storage);
+            m_writer.add_result("system::wallet_stotage", settings::system::wallet_stotage);
+            m_writer.add_result("system::debug_mode", settings::system::debug_mode);
+            m_writer.add_result("system::jrpc_conn_timeout", settings::system::jrpc_conn_timeout);
+            m_writer.add_result("system::jrpc_timeout", settings::system::jrpc_timeout);
             break;
 
         case cmd::keys:
