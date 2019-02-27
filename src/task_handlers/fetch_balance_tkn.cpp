@@ -30,6 +30,11 @@ bool fetch_balance_tkn::prepare_params()
         CHK_PRM(!addr.empty(), "address is empty")
         CHK_PRM(addr.compare(0, 2, "0x") == 0, "address field incorrect format")
 
+        if (m_reader.get_value(*params, "contract", m_contract)) {
+            CHK_PRM(m_contract.compare(0, 2, "0x") == 0, "contract field incorrect format")
+            std::transform(m_contract.begin(), m_contract.end(), m_contract.begin(), ::tolower);
+        }
+
         //std::transform(addr.begin(), addr.end(), addr.begin(), ::tolower);
 
         /*
@@ -117,6 +122,35 @@ bool fetch_balance_tkn::prepare_params()
         return true;
     }
     END_TRY_RET(false)
+}
+
+void fetch_balance_tkn::process_response(json_rpc_id id, json_rpc_reader &reader)
+{
+    base_network_handler::process_response(id, reader);
+    if (!m_contract.empty()) {
+        rapidjson::Value obj(rapidjson::Type::kObjectType);
+        rapidjson::Document& doc = m_writer.getDoc();
+        auto data = doc.FindMember("data");
+        std::string tmp;
+        if (data != doc.MemberEnd() && data->value.IsArray()) {
+            for (const auto& v: data->value.GetArray()) {
+                auto addr = v.FindMember("ico_address");
+                if (addr == v.MemberEnd()) {
+                    continue;
+                }
+                tmp = addr->value.GetString();
+                std::transform(tmp.begin(), tmp.end(), tmp.begin(), ::tolower);
+                if (m_contract.compare(tmp) == 0) {
+                    obj.CopyFrom(v, doc.GetAllocator());
+                    break;
+                }
+            }
+            data->value.Clear();
+            if (obj.MemberCount() > 0) {
+                data->value.PushBack(obj, doc.GetAllocator());
+            }
+        }
+    }
 }
 
 //void fetch_balance_tkn::execute() {

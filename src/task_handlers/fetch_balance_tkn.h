@@ -11,10 +11,12 @@ public:
 //    virtual void execute() override;
 
 protected:
+    virtual void process_response(json_rpc_id id, json_rpc_reader &reader);
     virtual bool prepare_params() override;
 
 protected:
     bool m_exec = {true};
+    std::string m_contract;
 };
 
 #endif // __FETCH_BALANCE_TKN_H__

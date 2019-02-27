@@ -42,7 +42,7 @@ bool fetch_balance_handler::prepare_params()
         if (!m_exec) {
             CHK_PRM(storage::database::open(), "could not open database")
             std::string db_res;
-            CHK_PRM(storage::database::get_balance(addr, db_res), "failed on get balance from database")
+            storage::database::get_balance(addr, db_res);
 
             char buf[50] = {0};
             rapidjson::Value data_arr(rapidjson::kArrayType);
