@@ -35,7 +35,7 @@ protected:
     
 protected:
     bool                                        m_async_execute = {true};
-    http_json_rpc_request_unique                m_request;
+    http_json_rpc_request_ptr                   m_request;
     std::unique_ptr<boost::asio::io_context>    m_io_ctx;
     handler_callback                            m_callback;
 };

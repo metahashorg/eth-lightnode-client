@@ -16,10 +16,10 @@
 base_network_handler::base_network_handler(const std::string &host, http_session_ptr session)
     : base_handler(session) {
     if (session) {
-        m_request = std::make_unique<http_json_rpc_request>(host, session->get_io_context());
+        m_request = std::make_shared<http_json_rpc_request>(host, session->get_io_context());
     } else {
         m_io_ctx.reset(new boost::asio::io_context());
-        m_request = std::make_unique<http_json_rpc_request>(host, *m_io_ctx.get());
+        m_request = std::make_shared<http_json_rpc_request>(host, *m_io_ctx.get());
     }
 }
 
