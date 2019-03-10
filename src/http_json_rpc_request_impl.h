@@ -62,6 +62,7 @@ protected:
 private:
     bool                                m_async;
     bool                                m_use_ssl;
+    bool                                m_canceled;
     asio::io_context&                   m_io_ctx;
     tcp::socket                         m_socket;
     tcp::resolver                       m_resolver;
@@ -77,6 +78,7 @@ private:
     ssl::context                        m_ssl_ctx;
     ssl::stream<tcp::socket>            m_ssl_socket;
     std::string                         m_id;
+    std::mutex                          m_locker;
 };
 
 #endif // __HTTP_JSON_RPC_REQUEST_IMPL_H__

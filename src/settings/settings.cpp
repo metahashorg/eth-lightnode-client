@@ -34,8 +34,8 @@ namespace settings
     std::string system::data_storage    = { "./data" };
     bool system::isLightKey = true;
     bool system::debug_mode = false;
-    unsigned int system::jrpc_conn_timeout = 60000;
-    unsigned int system::jrpc_timeout = 500;
+    unsigned int system::jrpc_conn_timeout = 1000;
+    unsigned int system::jrpc_timeout = 60000;
 
     void read()
     {
@@ -72,8 +72,8 @@ namespace settings
         system::wallet_stotage  = tree.get<std::string>("system.wallets-storage", "./wallet");
         system::data_storage    = tree.get<std::string>("system.data-storage", "./data");
         system::isLightKey      = tree.get<bool>("system.is-light-key", true);
-        system::jrpc_conn_timeout = tree.get<unsigned int>("system.jrpc-conn-timeout", 60000);
-        system::jrpc_timeout    = tree.get<unsigned int>("system.jrpc-timeout", 500);
+        system::jrpc_conn_timeout = tree.get<unsigned int>("system.jrpc-conn-timeout", 1000);
+        system::jrpc_timeout    = tree.get<unsigned int>("system.jrpc-timeout", 60000);
     }
 
     void read(boost::program_options::variables_map& vm)

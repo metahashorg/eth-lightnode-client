@@ -114,7 +114,11 @@ target_link_libraries(${PROJECT_NAME} ${LIB_CRYPTO} ${LIB_SSL} ${LIB_LEVELDB} ${
 
 #include_directories(../3rd_party/leveldb/include/)
 
-set (CMAKE_CXX_FLAGS "-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -pthread -Ofast -Wall -Wextra -Werror -Wno-unused-parameter -Wfloat-equal")
+if(${CMAKE_BUILD_TYPE} STREQUAL "Release")
+    set (CMAKE_CXX_FLAGS "-fno-builtin-malloc -fno-builtin-calloc -fno-builtin-realloc -fno-builtin-free -pthread -Ofast -Wall -Wextra -Werror -Wno-unused-parameter")
+elseif(${CMAKE_BUILD_TYPE} STREQUAL "Debug")
+    set (CMAKE_CXX_FLAGS "-Wall -Wextra -Werror -Wno-unused-parameter")
+endif()
 
 target_compile_options(${PROJECT_NAME} PRIVATE -no-pie -D_GLIBCXX_USE_CXX11_ABI=0)
 set_target_properties(${PROJECT_NAME} PROPERTIES LINK_FLAGS "-no-pie -D_GLIBCXX_USE_CXX11_ABI=0")

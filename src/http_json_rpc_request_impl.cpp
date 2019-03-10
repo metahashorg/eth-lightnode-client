@@ -17,6 +17,7 @@
 http_json_rpc_request_impl::http_json_rpc_request_impl(const std::string& host, asio::io_context& execute_context):
     m_async(true),
     m_use_ssl(false),
+    m_canceled(false),
     m_io_ctx(execute_context),
     m_socket(m_io_ctx),
     m_resolver(m_io_ctx),
@@ -43,8 +44,7 @@ http_json_rpc_request_impl::http_json_rpc_request_impl(const std::string& host, 
 http_json_rpc_request_impl::~http_json_rpc_request_impl()
 {
     boost::system::error_code ec;
-    if (m_socket.is_open())
-    {
+    if (m_socket.is_open()) {
         m_socket.shutdown(tcp::socket::shutdown_both, ec);
         m_socket.close(ec);
     }
@@ -78,9 +78,17 @@ void http_json_rpc_request_impl::set_body(const std::string& body)
 
 bool http_json_rpc_request_impl::error_handler(const boost::system::error_code& e)
 {
+    std::lock_guard<std::mutex> lock(m_locker);
+
+    if (m_canceled) {
+        return true;
+    }
+
     if (!e) {
         return false;
     }
+
+    m_canceled = true;
 
     m_timer.stop();
     m_connect_timer.stop();
@@ -88,8 +96,7 @@ bool http_json_rpc_request_impl::error_handler(const boost::system::error_code& 
     LOG_ERR("Json-rpc[%s] Request error %d: %s", m_id.c_str(), e.value(), e.message().c_str())
 
     boost::system::error_code ec;
-    if (m_socket.is_open())
-    {
+    if (m_socket.is_open()) {
         m_socket.shutdown(tcp::socket::shutdown_both, ec);
         m_socket.close(ec);
     }
@@ -98,13 +105,14 @@ bool http_json_rpc_request_impl::error_handler(const boost::system::error_code& 
 
     //if (e != asio::error::operation_aborted)
     {
-        logg::push_err(e.message().c_str());
-        m_result.set_error(32000, e.message().c_str());
+//        logg::push_err(e.message().c_str());
+        m_result.set_error(e.value(), string_utils::str_concat("Request error: ", e.message()).c_str());
         perform_callback();
     }
 
-    if (!m_async && !m_io_ctx.stopped())
+    if (!m_async && !m_io_ctx.stopped()) {
         m_io_ctx.stop();
+    }
 
     m_duration.stop();
 
@@ -122,8 +130,9 @@ void http_json_rpc_request_impl::execute_async(http_json_rpc_execute_callback ca
 {
     m_duration.start();
 
-    if (callback)
+    if (callback) {
         m_callback = boost::bind(callback);
+    }
 
     std::string addr, path, port;
     utils::parse_address(m_host, addr, port, path, m_use_ssl);
@@ -133,11 +142,18 @@ void http_json_rpc_request_impl::execute_async(http_json_rpc_execute_callback ca
 
 void http_json_rpc_request_impl::on_request_timeout()
 {
-    LOG_ERR("Json-rpc[%s] Request timeout %u millisec", m_id.c_str(), settings::system::jrpc_timeout)
+    std::lock_guard<std::mutex> lock(m_locker);
+    if (m_canceled) {
+        return;
+    }
+
+    m_canceled = true;
+
+    LOG_ERR("Json-rpc[%s] Request timeout %u ms", m_id.c_str(), settings::system::jrpc_timeout)
 
     m_connect_timer.stop();
 
-    m_result.set_error(32001, "Request timeout");
+    m_result.set_error(32001, string_utils::str_concat("Request timeout ", std::to_string(settings::system::jrpc_timeout), " ms"));
     perform_callback();
     boost::system::error_code ec;
     m_socket.close(ec);
@@ -159,38 +175,47 @@ void http_json_rpc_request_impl::on_resolve(const boost::system::error_code& e, 
 
 void http_json_rpc_request_impl::on_connect_timeout()
 {
-    LOG_ERR("Json-rpc[%s] Connect timeout %u millisec", m_id.c_str(), settings::system::jrpc_conn_timeout)
+    std::lock_guard<std::mutex> lock(m_locker);
+    if (m_canceled) {
+        return;
+    }
+
+    m_canceled = true;
+
+    LOG_ERR("Json-rpc[%s] Connection to %s timeout %u ms ", m_id.c_str(), m_host.c_str(), settings::system::jrpc_conn_timeout)
+
+    m_result.set_error(32002, string_utils::str_concat("Connection to ", m_host, " timeout ", std::to_string(settings::system::jrpc_conn_timeout), " ms"));
 
     boost::system::error_code ec;
+    m_socket.shutdown(tcp::socket::shutdown_both, ec);
     m_socket.cancel(ec);
+    m_ssl_socket.shutdown(ec);
 
     //m_connect_timer.run_once();
-    m_connect_timer.stop();
+    //m_connect_timer.stop();
 }
 
 void http_json_rpc_request_impl::on_connect(const boost::system::error_code& e, const tcp::endpoint&)
 {
     m_connect_timer.stop();
 
-    boost::system::error_code ec = e;
-    if (ec.value() == ECANCELED)
-    {
-        ec.assign(ETIMEDOUT, ec.category());
-    }
+//    boost::system::error_code ec = e;
+//    if (ec.value() == ECANCELED)
+//    {
+//        ec.assign(ETIMEDOUT, ec.category());
+//    }
 
-    if (error_handler(ec))
+    if (error_handler(e)) {
         return;
+    }
 
     m_timer.start(std::chrono::milliseconds(settings::system::jrpc_timeout),
                   boost::bind(&http_json_rpc_request_impl::on_request_timeout, shared_from_this()));
 
-    if (is_ssl())
-    {
+    if (is_ssl()) {
         m_ssl_socket.async_handshake(ssl::stream<tcp::socket>::client,
             boost::bind(&http_json_rpc_request_impl::on_handshake, shared_from_this(), asio::placeholders::error));
-    }
-    else
-    {
+    } else {
         LOG_DBG("Json-rpc[%s] Send request: %s <<< %s", m_id.c_str(), m_host.c_str(), m_req.body().c_str())
 
         http::async_write(m_socket, m_req,
@@ -200,8 +225,9 @@ void http_json_rpc_request_impl::on_connect(const boost::system::error_code& e, 
 
 void http_json_rpc_request_impl::on_handshake(const boost::system::error_code& e)
 {
-    if (error_handler(e))
+    if (error_handler(e)) {
         return;
+    }
 
     LOG_DBG("Json-rpc[%s] Send request: %s <<< %s", m_id.c_str(), m_host.c_str(), m_req.body().c_str())
 
@@ -211,15 +237,14 @@ void http_json_rpc_request_impl::on_handshake(const boost::system::error_code& e
 
 void http_json_rpc_request_impl::on_write(const boost::system::error_code& e)
 {
-    if (error_handler(e))
+    if (error_handler(e)) {
         return;
-    if (is_ssl())
-    {
+    }
+
+    if (is_ssl()) {
         http::async_read(m_ssl_socket, m_buf, m_response,
             boost::bind(&http_json_rpc_request_impl::on_read, shared_from_this(), asio::placeholders::error));
-    }
-    else
-    {
+    } else {
         http::async_read(m_socket, m_buf, m_response,
             boost::bind(&http_json_rpc_request_impl::on_read, shared_from_this(), asio::placeholders::error));
     }
@@ -227,20 +252,19 @@ void http_json_rpc_request_impl::on_write(const boost::system::error_code& e)
 
 void http_json_rpc_request_impl::on_read(const boost::system::error_code& e)
 {
-    if (error_handler(e))
+    if (error_handler(e)) {
         return;
+    }
 
     m_timer.stop();
 
     http::status status = m_response.result();
-    if (status != http::status::ok)
-    {
+    if (status != http::status::ok) {
         LOG_ERR("Json-rpc[%s] Incorrect response http status %d (%s)", m_id.c_str(), status, http::obsolete_reason(status).data())
     }
 
     const bool succ = m_result.parse(m_response.body().c_str());
-    if (!succ)
-    {
+    if (!succ) {
         LOG_ERR("Json-rpc[%s] Response json parse error: %u", m_id.c_str(), m_result.getDoc().GetParseError())
         if (status != http::status::ok) {
             m_result.set_error(static_cast<int>(status), "Incorrect response http status");
@@ -251,16 +275,16 @@ void http_json_rpc_request_impl::on_read(const boost::system::error_code& e)
 
     perform_callback();
 
-    if (!m_async && !m_io_ctx.stopped())
+    if (!m_async && !m_io_ctx.stopped()) {
         m_io_ctx.stop();
+    }
 
     m_duration.stop();
 }
 
 void http_json_rpc_request_impl::perform_callback()
 {
-    if (m_callback)
-    {
+    if (m_callback) {
         m_callback();
         m_callback = nullptr;
     }
