@@ -24,6 +24,7 @@ set(ETH_SOURCES
 )
 
 add_executable(${PROJECT_NAME}
+    common/signal_handler.cpp
     common/string_utils.cpp
     common/filesystem_utils.cpp
     log/log.cpp

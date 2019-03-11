@@ -9,7 +9,7 @@ IP7_Client* logger::_client = nullptr;
 IP7_Trace*  logger::_trace = nullptr;
 
 void init() {
-    P7_Set_Crash_Handler();
+//    P7_Set_Crash_Handler();
     logger::_client = P7_Create_Client(TM("/P7.Sink=FileTxt /P7.Pool=16 /P7.Format=\"[%tm] %ti %lv %ms\" /P7.Dir=./logs/ /P7.Roll=00:00tm"));
     if (logger::_client != nullptr) {
         logger::_trace = P7_Create_Trace(logger::_client, TM("channel"));

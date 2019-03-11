@@ -3,6 +3,9 @@
 #include "http_server.h"
 #include "settings/settings.h"
 #include "log/log.h"
+#include "P7_Client.h"
+#include <signal.h>
+#include "common/signal_handler.h"
 
 #define BOOST_ERROR_CODE_HEADER_ONLY
 #include <boost/program_options.hpp>
@@ -11,12 +14,21 @@ namespace po = boost::program_options;
 
 static std::unique_ptr<http_server> server;
 
+void signal_catcher(int sig)
+{
+    LOG_ERR("Signal \"%u\": %s", sig, strsignal(sig));
+    P7_Exceptional_Flush();
+    server->stop();
+}
+
 void print_request_help();
 
 int main(int argc, char* argv[])
 {
     try {
         logg::init();
+
+        common::set_signal_handler(signal_catcher);
 
         settings::read();
 
@@ -63,11 +75,13 @@ int main(int argc, char* argv[])
     catch (const std::exception& e)
     {
         LOG_ERR(e.what());
+        P7_Exceptional_Flush();
         return EXIT_FAILURE;
     }
     catch (...)
     {
         LOG_ERR("Unhandled exception");
+        P7_Exceptional_Flush();
         return EXIT_FAILURE;
     }
 }
