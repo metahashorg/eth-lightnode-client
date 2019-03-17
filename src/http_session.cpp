@@ -5,6 +5,7 @@
 #include "log/log.h"
 #include "task_handlers/base_handler.h"
 #include "common/string_utils.h"
+#include "task_handlers/task_handlers.h"
 
 #include <boost/beast/http.hpp>
 
@@ -69,7 +70,7 @@ void http_session::send_bad_request(const char* error)
     send_response(response);
 }
 
-void http_session::send_json(const std::string& data)
+void http_session::send_json(const std::string_view& data)
 {
     http::response<http::string_body> response;
     response.result(http::status::ok);
@@ -86,8 +87,10 @@ void http_session::send_response(http::response<http::string_body>& response)
     response.version(10);
     response.set(http::field::server, "eth.service");
     response.set(http::field::content_length, response.body().size());
-    response.set(http::field::keep_alive, true);
-    response.keep_alive(true);
+//    response.set(http::field::keep_alive, true);
+//    response.keep_alive(true);
+    response.set(http::field::keep_alive, false);
+    response.keep_alive(false);
     http::write(m_socket, response);
 }
 
@@ -99,10 +102,12 @@ void http_session::process_post_request()
         return;
     }
 
-    std::string json;
+    std::string_view json;
     json_rpc_reader reader;
     json_rpc_writer writer;
-    if (reader.parse(m_req.body().c_str())) {
+    handler_result response;
+    const std::string_view body(m_req.body().c_str(), m_req.body().size());
+    if (reader.parse(body)) {
         auto it = post_handlers.find(reader.get_method());
         if (it == post_handlers.end()) {
             LOG_WRN("Incorrect service method %s", reader.get_method())
@@ -111,11 +116,11 @@ void http_session::process_post_request()
             writer.set_error(-32601, string_utils::str_concat("Method '", reader.get_method(), "' not found"));
             json = writer.stringify();
         } else {
-            auto res = it->second(shared_from_this(), m_req.body());
+            response = it->second(shared_from_this(), body);
             // async operation
-            if (!res)
+            if (!response)
                 return;
-            json.append(res.message);
+            json = response.message;
         }
     } else {
         LOG_ERR("Incorrect json %u: %s", reader.get_parse_error().Code(), m_req.body().c_str())
@@ -145,6 +150,7 @@ void http_session::process_get_request()
 
     std::string json;
     json_rpc_writer writer;
+    handler_result response;
     auto it = get_handlers.find(method);
     if (it == get_handlers.end()) {
         LOG_WRN("Incorrect service method %s", method.data())
@@ -156,11 +162,11 @@ void http_session::process_get_request()
         if (!params.empty()) {
             json_utils::to_json(params, *writer.get_params(), writer.get_allocator());
         }
-        auto res = it->second(shared_from_this(), writer.stringify());
+        response = it->second(shared_from_this(), writer.stringify());
         // async operation
-        if (!res)
+        if (!response)
             return;
-        json.append(res.message);
+        json.append(response.message);
     }
     send_json(json);
 }

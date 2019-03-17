@@ -16,19 +16,19 @@ handler_result base_handler::result()
     return m_result;
 }
 
-bool base_handler::prepare(const std::string& params)
+bool base_handler::prepare(const std::string_view& params)
 {
     BGN_TRY
     {
         m_duration.start();
 
-        CHK_PRM(this->m_reader.parse(params.c_str()), "Parse error");
+        CHK_PRM(m_reader.parse(params), "Parse error");
 
-        this->m_id = this->m_reader.get_id();
-        this->m_writer.set_id(this->m_id);
+        m_id = m_reader.get_id();
+        m_writer.set_id(m_id);
 
-        const bool complete = this->prepare_params();
-        const bool pending = this->m_result.pending;
+        const bool complete = prepare_params();
+        const bool pending = m_result.pending;
         if (!complete && !pending)
         {
             // prepare_params must set an error
@@ -40,7 +40,7 @@ bool base_handler::prepare(const std::string& params)
             }
         }
 
-        LOG_DBG("Prepared json (%u,%u): %s", complete, pending, this->m_writer.stringify().c_str())
+        LOG_DBG("Prepared json (%u,%u): %s", complete, pending, m_writer.stringify().data())
 
         return complete;
     }

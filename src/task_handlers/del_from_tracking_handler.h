@@ -22,8 +22,8 @@ public:
 protected:
     virtual bool prepare_params() override;
 
-    void on_batch_complete(const std::string& param);
-    void on_batch_tkn_complete(const std::string& param);
+    void on_batch_complete(const std::string_view& param);
+    void on_batch_tkn_complete(const std::string_view& param);
 
     void on_complete();
 

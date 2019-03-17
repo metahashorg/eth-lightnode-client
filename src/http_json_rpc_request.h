@@ -11,6 +11,8 @@ class io_context;
 }
 }
 
+#include <iostream>
+
 using http_json_rpc_execute_callback = std::function<void()>;
 
 class http_json_rpc_request_impl;
@@ -21,13 +23,13 @@ public:
     http_json_rpc_request(const std::string& host, boost::asio::io_context& execute_context);
     ~http_json_rpc_request();
 
-    void set_path(const std::string& path);
-    void set_body(const std::string& body);
+    void set_path(const std::string_view& path);
+    void set_body(const std::string_view& body);
 
     void execute();
     void execute_async(http_json_rpc_execute_callback callback);
 
-    std::string get_result();
+    std::string_view get_result();
 
 private:
     std::shared_ptr<http_json_rpc_request_impl> m_impl;

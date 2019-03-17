@@ -40,7 +40,7 @@ void base_network_handler::execute()
         if (!m_async_execute) {
             m_request->execute();
             m_writer.reset();
-            m_writer.parse(m_request->get_result().c_str());
+            m_writer.parse(m_request->get_result());
         } else {
             m_request->execute_async(boost::bind(&base_network_handler::on_complete, shared_from(this)));
         }
@@ -97,7 +97,7 @@ void base_network_handler::on_complete()
         m_writer.reset();
         json_rpc_reader reader;
 
-        CHK_PRM(reader.parse(m_request->get_result().c_str()), "Invalid response json")
+        CHK_PRM(reader.parse(m_request->get_result()), "Invalid response json")
 
         process_response(m_id, reader);
 
@@ -113,7 +113,7 @@ void base_network_handler::on_complete_clbk()
         m_writer.reset();
         json_rpc_reader reader;
 
-        CHK_PRM(reader.parse(m_request->get_result().c_str()), "Invalid response json")
+        CHK_PRM(reader.parse(m_request->get_result()), "Invalid response json")
 
         process_response(m_id, reader);
 

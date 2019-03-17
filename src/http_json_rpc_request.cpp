@@ -10,12 +10,12 @@ http_json_rpc_request::~http_json_rpc_request()
 {
 }
 
-void http_json_rpc_request::set_path(const std::string& path)
+void http_json_rpc_request::set_path(const std::string_view& path)
 {
     m_impl->set_path(path);
 }
 
-void http_json_rpc_request::set_body(const std::string& body)
+void http_json_rpc_request::set_body(const std::string_view& body)
 {
     m_impl->set_body(body);
 }
@@ -30,7 +30,7 @@ void http_json_rpc_request::execute_async(http_json_rpc_execute_callback callbac
     m_impl->execute_async(callback);
 }
 
-std::string http_json_rpc_request::get_result()
+std::string_view http_json_rpc_request::get_result()
 {
     return m_impl->get_result();
 }

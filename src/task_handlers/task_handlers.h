@@ -8,10 +8,10 @@
 
 struct handler_result;
 
-using handler_func = handler_result(*)(http_session_ptr session, const std::string& params);
+using handler_func = handler_result(*)(http_session_ptr session, const std::string_view& params);
 
 // TODO replace to string_view
-extern const std::map<std::string, handler_func> post_handlers;
+extern const std::map<std::string_view, handler_func> post_handlers;
 
 extern const std::map<std::string_view, handler_func> get_handlers;
 

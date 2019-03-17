@@ -20,14 +20,14 @@ struct handler_result
     bool pending = { false };
 };
 
-using handler_callback = std::function<void(const std::string& param)>;
+using handler_callback = std::function<void(const std::string_view& param)>;
 
 class base_handler: public std::enable_shared_from_this<base_handler> {
 public:
     base_handler(http_session_ptr& session);
     virtual ~base_handler();
 
-    bool prepare(const std::string& params);
+    bool prepare(const std::string_view& params);
 
     virtual void execute() = 0;
     virtual void execute(handler_callback callback) = 0;
@@ -52,7 +52,7 @@ protected:
 };
 
 template <class T>
-static handler_result perform(http_session_ptr session, const std::string& params) {
+static handler_result perform(http_session_ptr session, const std::string_view& params) {
     try {
         std::shared_ptr<T> obj = std::make_shared<T>(session);
         if (obj->prepare(params)) {
@@ -69,7 +69,7 @@ static handler_result perform(http_session_ptr session, const std::string& param
 }
 
 template <class T>
-static handler_result perform(http_session_ptr session, const std::string& params, handler_callback callback) {
+static handler_result perform(http_session_ptr session, const std::string_view& params, handler_callback callback) {
     try {
         std::shared_ptr<T> obj = std::make_shared<T>(session);
         if (obj->prepare(params)) {

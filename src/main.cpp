@@ -6,6 +6,7 @@
 #include "P7_Client.h"
 #include <signal.h>
 #include "common/signal_handler.h"
+#include <execinfo.h>
 
 #define BOOST_ERROR_CODE_HEADER_ONLY
 #include <boost/program_options.hpp>
@@ -14,14 +15,7 @@ namespace po = boost::program_options;
 
 static std::unique_ptr<http_server> server;
 
-void signal_catcher(int sig)
-{
-    LOG_ERR("Signal \"%u\": %s", sig, strsignal(sig));
-    P7_Exceptional_Flush();
-    server->stop();
-}
-
-void print_request_help();
+void signal_catcher(int sig);
 
 int main(int argc, char* argv[])
 {
@@ -36,12 +30,11 @@ int main(int argc, char* argv[])
 
         po::options_description desc("Allowed options");
         desc.add_options()
-            ("help",                                            "produce help message")
-            ("requests",                                        "list of allowed requests with a detailed description")
+            ("help",                                            "produce this help message")
             ("threads",         po::value<int>(),               "number of threads")
             ("port",            po::value<unsigned short>(),    "service port, default is 9999")
             ("server",          po::value<std::string>(),       "server address")
-            ("storage",         po::value<std::string>(),       "storage of wallets")
+            ("storage",         po::value<std::string>(),       "path to storage of wallets")
             ("any",                                             "accept any connections")
             ("token",           po::value<std::string>(),       "sevice token")
             ("coin-key",        po::value<int>(),               "coin key identificator")
@@ -57,12 +50,6 @@ int main(int argc, char* argv[])
             return EXIT_SUCCESS;
         }
 
-        if (vm.count("request"))
-        {
-            print_request_help();
-            return EXIT_SUCCESS;
-        }
-        
         settings::read(vm);
 
         server = std::make_unique<http_server>(settings::service::port, settings::service::threads);
@@ -86,15 +73,37 @@ int main(int argc, char* argv[])
     }
 }
 
-void print_request_help()
+#include <dlfcn.h>
+void signal_catcher(int sig)
 {
-    po::options_description info("Requests:");
-    info.add_options()
-        ("Generate wallet",     "{\"id\":decimal, \"version\":\"2.0\",\"method\": \"generate\", \"params\":{\"password\": str}}")
-        ("Balance of wallet",   "{\"id\":decimal, \"version\":\"2.0\",\"method\": \"fetch-balance\", \"params\":{\"address\": hex str}}")
-        ("History of wallet",   "{\"id\":decimal, \"version\":\"2.0\",\"method\": \"fetch-history\", \"params\":{\"address\": hex str}}")
-        ("Create transaction",  "{\"id\":decimal, \"version\":\"2.0\",\"method\": \"create-tx\", \"params\":{\"address\": hex str, \"password\": str, \"to\": hex str, \"value\": \"decimal/all\", \"fee\": \"decimal/auto\", \"nonce\": \"decimal\"}}")
-        ("Send transaction",    "{\"id\":decimal, \"version\":\"2.0\",\"method\": \"send-tx\", \"params\":{\"address\": hex str, \"password\": str, \"to\": hex str, \"value\": \"decimal/all\", \"fee\": \"decimal/auto\", \"nonce\": \"decimal\"}}");
+    std::string out;
+    out.reserve(512);
+    out.append("Caught signal \"");
+    out.append(std::to_string(sig));
+    out.append("\" : ");
+    out.append(strsignal(sig));
 
-    std::cout << info << std::endl;
+    void* addrlist[40];
+    int size = backtrace(addrlist, sizeof(addrlist)/sizeof(void*));
+
+    for (int i=0; i < size; ++i){
+        LOG_INF("addr: %u", addrlist[i]);
+        Dl_info inf;
+        dladdr(addrlist[i], &inf);
+        LOG_INF("info %u, %s, %u, %s", inf.dli_fbase, inf.dli_fname, inf.dli_saddr, inf.dli_sname);
+    }
+
+    if (size != 0) {
+        out.append("\nStack trace:\n");
+        char** symbollist = backtrace_symbols(addrlist, size);
+        for (int i = 0; i < size; ++i) {
+            out.append("  ");
+            out.append(symbollist[i]);
+            out.append("\n");
+        }
+        free(symbollist);
+    }
+    LOG_ERR(out.c_str());
+    P7_Exceptional_Flush();
+    server->stop();
 }

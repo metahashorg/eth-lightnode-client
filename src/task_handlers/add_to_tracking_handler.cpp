@@ -53,25 +53,25 @@ void add_to_tracking_handler::execute()
 
         auto self = shared_from(this);
         auto result = perform<add_addresses_to_batch>(m_session, json,
-            [self](const std::string& result) { self->on_batch_complete(result); });
+            [self](const std::string_view& result) { self->on_batch_complete(result); });
 
         CHK_PRM(result.pending, "Failed on send 'add address to batch'");
 
         result = perform<add_addresses_to_batch_tkn>(m_session, json,
-            [self](const std::string& result) { self->on_batch_tkn_complete(result); });
+            [self](const std::string_view& result) { self->on_batch_tkn_complete(result); });
 
         CHK_PRM(result.pending, "Failed on send 'add address to batch token'");
     }
     END_TRY_PARAM(send_response())
 }
 
-void add_to_tracking_handler::execute(handler_callback callback)
+void add_to_tracking_handler::execute(handler_callback)
 {
     // TODO add if need
     CHK_PRM(false, "Not implement")
 }
 
-void add_to_tracking_handler::on_batch_complete(const std::string& param) {
+void add_to_tracking_handler::on_batch_complete(const std::string_view& param) {
     BGN_TRY
     {
         std::lock_guard<std::mutex> lock(m_locker);
@@ -82,13 +82,13 @@ void add_to_tracking_handler::on_batch_complete(const std::string& param) {
                 break;
             }
             json_rpc_reader reader;
-            if (!reader.parse(param.c_str())) {
-                LOG_ERR("Could not parse result from \"Add address to batch\". Json: %s", param.c_str());
+            if (!reader.parse(param)) {
+                LOG_ERR("Could not parse result from \"Add address to batch\". Json: %s", param.data());
                 break;
             }
             auto tmp = reader.get_error();
             if (tmp) {
-                LOG_ERR("Recieved error from \"Add address to batch\". %s", reader.stringify(tmp).c_str());
+                LOG_ERR("Recieved error from \"Add address to batch\". %s", reader.stringify(tmp).data());
                 break;
             }
             tmp = reader.get_result();
@@ -104,7 +104,7 @@ void add_to_tracking_handler::on_batch_complete(const std::string& param) {
     END_TRY_PARAM(on_complete());
 }
 
-void add_to_tracking_handler::on_batch_tkn_complete(const std::string& param) {
+void add_to_tracking_handler::on_batch_tkn_complete(const std::string_view& param) {
     BGN_TRY
     {
         std::lock_guard<std::mutex> lock(m_locker);
@@ -115,13 +115,13 @@ void add_to_tracking_handler::on_batch_tkn_complete(const std::string& param) {
                 break;
             }
             json_rpc_reader reader;
-            if (!reader.parse(param.c_str())) {
-                LOG_ERR("Could not parse result from \"Add address to batch token\". Json: %s", param.c_str());
+            if (!reader.parse(param.data())) {
+                LOG_ERR("Could not parse result from \"Add address to batch token\". Json: %s", param.data());
                 break;
             }
             auto tmp = reader.get_error();
             if (tmp) {
-                LOG_ERR("Recieved error from \"Add address to batch token\". %s", reader.stringify(tmp).c_str());
+                LOG_ERR("Recieved error from \"Add address to batch token\". %s", reader.stringify(tmp).data());
                 break;
             }
             tmp = reader.get_result();

@@ -24,7 +24,7 @@
 #include "fetch_history_tkn.h"
 #include "status_handler.h"
 
-const std::map<std::string, handler_func> post_handlers = {
+const std::map<std::string_view, handler_func> post_handlers = {
     { "generate",                       perform<generate_handler> },
     { "create-tx",                      perform<create_tx_handler> },
     { "send-tx",                        perform<send_tx_handler> },

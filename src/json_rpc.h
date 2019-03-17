@@ -7,6 +7,7 @@
 #include <string.h>
 #include <string_view>
 #include "rapidjson/document.h"
+#include "rapidjson/writer.h"
 
 static const char json_rpc_ver[] = "2.0";
 
@@ -30,9 +31,9 @@ public:
     json_rpc_reader();
     ~json_rpc_reader();
 
-    bool parse(const char* json);
+    bool parse(const std::string_view& json);
 
-    std::string stringify(rapidjson::Value* value = nullptr);
+    std::string_view stringify(rapidjson::Value* value = nullptr);
 
     inline bool	is_valid() const { return !m_error.IsError(); }
 
@@ -77,6 +78,7 @@ public:
 protected:
     rapidjson::ParseResult  m_error;
     rapidjson::Document     m_doc;
+    rapidjson::StringBuffer m_buf;
 };
 
 
@@ -86,10 +88,10 @@ public:
     json_rpc_writer();
     ~json_rpc_writer();
 
-    bool parse(const char* json);
+    bool parse(const std::string_view& json);
     void reset();
 
-    std::string stringify(rapidjson::Value* value = nullptr);
+    std::string_view stringify(rapidjson::Value* value = nullptr);
 
     void set_method(const char* value);
     void set_result(const rapidjson::Value& value);
@@ -148,6 +150,7 @@ public:
     
 protected:
     rapidjson::Document m_doc;
+    rapidjson::StringBuffer m_buf;
 };
 
 #endif // JSON_RPC_H_

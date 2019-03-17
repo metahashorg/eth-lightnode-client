@@ -89,31 +89,31 @@ void create_tx_base_handler::execute()
         if (m_all_value) {
             res = perform<fetch_balance_handler>(m_session,
                 string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\"}}"),
-                [self](const std::string& result) { self->on_get_balance(result); });
+                [self](const std::string_view& result) { self->on_get_balance(result); });
             CHK_PRM(res.pending, "Failed on send 'fetch-balance'");
         }
 
         res = perform<get_transaction_params>(m_session,
             string_utils::str_concat("{\"id\":1, \"params\":{\"address\":\"", m_address ,"\",\"isPending\":\"", m_is_pending ,"\"}}"),
-            [self](const std::string& result) { self->on_get_trans_params(result); });
+            [self](const std::string_view& result) { self->on_get_trans_params(result); });
         CHK_PRM(res.pending, "Failed on send 'get-transaction-params'");
 
     }
     END_TRY_PARAM(send_response())
 }
 
-void create_tx_base_handler::execute(handler_callback callback)
+void create_tx_base_handler::execute(handler_callback)
 {
     // TODO add if need
     CHK_PRM(false, "Not implement")
 }
 
-bool create_tx_base_handler::check_json(const std::string& result)
+bool create_tx_base_handler::check_json(const std::string_view& result)
 {
     BGN_TRY
     {
         json_rpc_reader reader;
-        CHK_PRM(reader.parse(result.c_str()), "Invalid response json")
+        CHK_PRM(reader.parse(result), "Invalid response json")
         
         auto err = reader.get_error();
         auto res = reader.get_result();
@@ -130,7 +130,7 @@ bool create_tx_base_handler::check_json(const std::string& result)
     END_TRY_RET(false)
 }
 
-void create_tx_base_handler::on_get_balance(const std::string& result)
+void create_tx_base_handler::on_get_balance(const std::string_view& result)
 {
     BGN_TRY
     {
@@ -144,9 +144,9 @@ void create_tx_base_handler::on_get_balance(const std::string& result)
         }
         
         json_rpc_reader reader;
-        reader.parse(result.c_str());
+        reader.parse(result);
         
-        std::string balance;
+        std::string_view balance;
         auto data = reader.get("data", reader.get_doc());
         CHK_PRM(data, "get balance: 'data' field not found")
         if (data->IsArray()) {
@@ -168,7 +168,7 @@ void create_tx_base_handler::on_get_balance(const std::string& result)
         }
 
         mpz_class mpz;
-        mpz.set_str(balance, 10);
+        mpz.set_str(balance.data(), 10);
         mpz *= 1000000000000000000;
         
         m_value = mpz.get_str(16);
@@ -179,7 +179,7 @@ void create_tx_base_handler::on_get_balance(const std::string& result)
     END_TRY_PARAM(send_response())
 }
 
-void create_tx_base_handler::on_get_trans_params(const std::string& result)
+void create_tx_base_handler::on_get_trans_params(const std::string_view& result)
 {
     BGN_TRY
     {
@@ -193,7 +193,7 @@ void create_tx_base_handler::on_get_trans_params(const std::string& result)
         }
 
         json_rpc_reader reader;
-        CHK_PRM(reader.parse(result.c_str()), "get transaction params: remote service return invalid json")
+        CHK_PRM(reader.parse(result), "get transaction params: remote service return invalid json")
         
         rapidjson::Document& doc = reader.get_doc();
         auto data = doc.FindMember("data");
@@ -248,12 +248,11 @@ void create_tx_base_handler::on_complete_job()
 
         if (!m_auto_fee)
         {
-            std::string lim = m_gas_limit;
-            if (lim.compare(0, 2, "0x") == 0)
-            {
-                lim.erase(0, 2);
+            std::string_view lim = m_gas_limit;
+            if (lim.compare(0, 2, "0x") == 0) {
+                lim.remove_prefix(2);
             }
-            mpz_class tmp(lim, 16);
+            mpz_class tmp(lim.data(), 16);
             mpz_class res = m_fee / tmp;
             m_gas_price = res.get_str(16);
             m_gas_price.insert(0, "0x");

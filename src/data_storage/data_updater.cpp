@@ -47,10 +47,10 @@ namespace storage
                 *data = nullptr;
 
         json_rpc_reader reader;
-        CHK_PRM_BOOL(reader.parse(response), "storage::updater::prepare: Parse result from batch.addresses error: %s", reader.get_parse_error().Code())
+        CHK_PRM_BOOL(reader.parse(response.message), "storage::updater::prepare: Parse result from batch.addresses error: %s", reader.get_parse_error().Code())
 
         tmp = reader.get_error();
-        CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses. Error: %s", reader.stringify(tmp).c_str())
+        CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses. Error: %s", reader.stringify(tmp).data())
 
         tmp = reader.get_result();
         CHK_PRM_BOOL(tmp, "storage::updater::prepare: Could not recieve result from batch.addresses")
@@ -76,10 +76,10 @@ namespace storage
                 string_utils::str_concat("{\"id\":1, \"params\":{\"address\": \"", address, "\", \"group\":\"", group, "\"}}"));
 
             CHK_PRM_BOOL(!response.message.empty(), "storage::updater::prepare: Response from batch.addresses.remove is empty")
-            CHK_PRM_BOOL(reader.parse(response), "storage::updater::prepare: Parse result from batch.addresses.remove error: %s. Address: %s", reader.get_parse_error().Code(), address.c_str())
+            CHK_PRM_BOOL(reader.parse(response.message), "storage::updater::prepare: Parse result from batch.addresses.remove error: %s. Address: %s", reader.get_parse_error().Code(), address.c_str())
 
             tmp = reader.get_error();
-            CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses.remove. Address: %s. Error: %s", address.c_str(), reader.stringify(tmp).c_str())
+            CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses.remove. Address: %s. Error: %s", address.c_str(), reader.stringify(tmp).data())
 
             tmp = reader.get_result();
             CHK_PRM_BOOL(tmp, "storage::updater::prepare: Could not recieve result from batch.addresses.remove. Address: %s", address.c_str())
@@ -91,10 +91,10 @@ namespace storage
                 string_utils::str_concat("{\"id\":1, \"params\":{\"address\": \"", address, "\", \"group\":\"", group, "\"}}"));
 
             CHK_PRM_BOOL(!response.message.empty(), "storage::updater::prepare: Response from batch.addresses.add is empty")
-            CHK_PRM_BOOL(reader.parse(response), "storage::updater::prepare: Parse result from batch.addresses.add error: %s. Address: %s", reader.get_parse_error().Code(), address.c_str())
+            CHK_PRM_BOOL(reader.parse(response.message), "storage::updater::prepare: Parse result from batch.addresses.add error: %s. Address: %s", reader.get_parse_error().Code(), address.c_str())
 
             tmp = reader.get_error();
-            CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses.add. Address: %s. Error: %s", address.c_str(), reader.stringify(tmp).c_str())
+            CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses.add. Address: %s. Error: %s", address.c_str(), reader.stringify(tmp).data())
 
             tmp = reader.get_result();
             CHK_PRM_BOOL(tmp, "storage::updater::prepare: Could not recieve result from batch.addresses.add. Address: %s", address.c_str())
@@ -103,10 +103,10 @@ namespace storage
         response = perform<get_addresses_to_batch_tkn>(nullptr, string_utils::str_concat("{\"id\":1, \"params\":{\"group\":\"", group, "\"}}"));
         CHK_PRM_BOOL(!response.message.empty(), "storage::updater::prepare: Response from tkn.batch.addresses is empty")
 
-        CHK_PRM_BOOL(reader.parse(response), "storage::updater::prepare: Parse result from tkn.batch.addresses error: %s", reader.get_parse_error().Code())
+        CHK_PRM_BOOL(reader.parse(response.message), "storage::updater::prepare: Parse result from tkn.batch.addresses error: %s", reader.get_parse_error().Code())
 
         tmp = reader.get_error();
-        CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from tkn.batch.addresses. Error: %s", reader.stringify(tmp).c_str())
+        CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from tkn.batch.addresses. Error: %s", reader.stringify(tmp).data())
 
         tmp = reader.get_result();
         CHK_PRM_BOOL(tmp, "storage::updater::prepare: Could not recieve result from tkn.batch.addresses")
@@ -131,10 +131,10 @@ namespace storage
                 string_utils::str_concat("{\"id\":1, \"params\":{\"address\": \"", address, "\", \"group\":\"", group, "\"}}"));
 
             CHK_PRM_BOOL(!response.message.empty(), "storage::updater::prepare: Response from batch.addresses.remove is empty")
-            CHK_PRM_BOOL(reader.parse(response), "storage::updater::prepare: Parse result from batch.addresses.remove error: %s. Address: %s", reader.get_parse_error().Code(), address.c_str())
+            CHK_PRM_BOOL(reader.parse(response.message), "storage::updater::prepare: Parse result from batch.addresses.remove error: %s. Address: %s", reader.get_parse_error().Code(), address.c_str())
 
             tmp = reader.get_error();
-            CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses.remove. Address: %s. Error: %s", address.c_str(), reader.stringify(tmp).c_str())
+            CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses.remove. Address: %s. Error: %s", address.c_str(), reader.stringify(tmp).data())
 
             tmp = reader.get_result();
             CHK_PRM_BOOL(tmp, "storage::updater::prepare: Could not recieve result from batch.addresses.remove. Address: %s", address.c_str())
@@ -145,10 +145,10 @@ namespace storage
                 string_utils::str_concat("{\"id\":1, \"params\":{\"address\": \"", address, "\", \"group\":\"", group, "\"}}"));
 
             CHK_PRM_BOOL(!response.message.empty(), "storage::updater::prepare: Response from batch.addresses.add is empty")
-            CHK_PRM_BOOL(reader.parse(response), "storage::updater::prepare: Parse result from batch.addresses.add error: %s. Address: %s", reader.get_parse_error().Code(), address.c_str())
+            CHK_PRM_BOOL(reader.parse(response.message), "storage::updater::prepare: Parse result from batch.addresses.add error: %s. Address: %s", reader.get_parse_error().Code(), address.c_str())
 
             tmp = reader.get_error();
-            CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses.add. Address: %s. Error: %s", address.c_str(), reader.stringify(tmp).c_str())
+            CHK_PRM_BOOL(!tmp, "storage::updater::prepare: Recieved error from batch.addresses.add. Address: %s. Error: %s", address.c_str(), reader.stringify(tmp).data())
 
             tmp = reader.get_result();
             CHK_PRM_BOOL(tmp, "storage::updater::prepare: Could not recieve result from batch.addresses.add. Address: %s", address.c_str())
@@ -206,12 +206,12 @@ namespace storage
                 CHK_PRM_RET(!response.message.empty(), goto tokens,
                             "storage::updater::routine: Failed on get batch.last.balance for group \"%s\". Empty result", group.data());
 
-                CHK_PRM_RET(blns_reader.parse(response), goto tokens,
+                CHK_PRM_RET(blns_reader.parse(response.message), goto tokens,
                             "storage::updater::routine: Failed on parse batch.last.balance. Parse error: %u", blns_reader.get_parse_error().Code())
 
                 tmp = blns_reader.get_error();
                 CHK_PRM_RET(!tmp, goto tokens,
-                            "storage::updater::routine: Failed on get batch.last.balance for group \"%s\". Error: %s", group.data(), blns_reader.stringify(tmp).c_str())
+                            "storage::updater::routine: Failed on get batch.last.balance for group \"%s\". Error: %s", group.data(), blns_reader.stringify(tmp).data())
 
                 tmp = blns_reader.get("data", blns_reader.get_doc());
                 if (tmp == nullptr) {
@@ -314,13 +314,13 @@ namespace storage
                         LOG_ERR("storage::updater::routine: Failed on get batch history for group \"%s\". Empty result.", group.data());
                         goto tokens;
                     }
-                    if (!his_reader.parse(response)) {
+                    if (!his_reader.parse(response.message)) {
                         LOG_ERR("storage::updater::routine: Failed on parse batch history. Parse error: %d", his_reader.get_parse_error().Code());
                         goto tokens;
                     }
                     tmp = his_reader.get_error();
                     if (tmp != nullptr) {
-                        LOG_ERR("storage::updater::routine: Failed on get batch history for group \"%s\". Error: %s", group.data(), his_reader.stringify(tmp).c_str());
+                        LOG_ERR("storage::updater::routine: Failed on get batch history for group \"%s\". Error: %s", group.data(), his_reader.stringify(tmp).data());
                         goto tokens;
                     }
                     tmp = his_reader.get("data", his_reader.get_doc());
@@ -387,12 +387,12 @@ tokens:
                 CHK_PRM_RET(!response.message.empty(), goto wait,
                             "storage::updater::routine: Failed on get tkn.batch.last.balance for group \"%s\". Empty result", group.data());
 
-                CHK_PRM_RET(blns_reader.parse(response), goto wait,
+                CHK_PRM_RET(blns_reader.parse(response.message), goto wait,
                             "storage::updater::routine: Failed on parse tkn.batch.last.balance. Parse error: %u", blns_reader.get_parse_error().Code())
 
                 tmp = blns_reader.get_error();
                 CHK_PRM_RET(!tmp, goto wait,
-                            "storage::updater::routine: Failed on get tkn.batch.last.balance for group \"%s\". Error: %s", group.data(), blns_reader.stringify(tmp).c_str())
+                            "storage::updater::routine: Failed on get tkn.batch.last.balance for group \"%s\". Error: %s", group.data(), blns_reader.stringify(tmp).data())
 
                 tmp = blns_reader.get("data", blns_reader.get_doc());
                 if (tmp == nullptr) {
@@ -496,13 +496,13 @@ tokens:
                         LOG_ERR("storage::updater::routine: Failed on get token batch history for group \"%s\". Empty result.", group.data());
                         goto wait;
                     }
-                    if (!his_reader.parse(response)) {
+                    if (!his_reader.parse(response.message)) {
                         LOG_ERR("storage::updater::routine: Failed on parse token batch history. Parse error: %d", his_reader.get_parse_error().Code());
                         goto wait;
                     }
                     tmp = his_reader.get_error();
                     if (tmp != nullptr) {
-                        LOG_ERR("storage::updater::routine: Failed on get token batch history for group \"%s\". Error: %s", group.data(), his_reader.stringify(tmp).c_str());
+                        LOG_ERR("storage::updater::routine: Failed on get token batch history for group \"%s\". Error: %s", group.data(), his_reader.stringify(tmp).data());
                         goto wait;
                     }
                     tmp = his_reader.get("data", his_reader.get_doc());

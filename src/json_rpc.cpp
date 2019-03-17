@@ -4,8 +4,6 @@
 
 #include <gmpxx.h>
 
-#include "rapidjson/writer.h"
-
 // json_rpc_reader
 
 json_rpc_reader::json_rpc_reader()
@@ -21,11 +19,11 @@ json_rpc_reader::~json_rpc_reader()
 //    return parse(json.c_str());
 //}
 
-bool json_rpc_reader::parse(const char* json)
+bool json_rpc_reader::parse(const std::string_view& json)
 {
     try
     {
-        m_error = m_doc.Parse(json);
+        m_error = m_doc.Parse(json.data(), json.size());
         return !m_error.IsError();
     }
     catch (const std::exception& e)
@@ -35,15 +33,15 @@ bool json_rpc_reader::parse(const char* json)
         return false;
     }
 }
-// TODO twice alloc
-std::string json_rpc_reader::stringify(rapidjson::Value* value /*= nullptr*/)
+
+std::string_view json_rpc_reader::stringify(rapidjson::Value* value /*= nullptr*/)
 {
-    rapidjson::StringBuffer buf;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
+    m_buf.Clear();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(m_buf);
     if (!value)
         value = &m_doc;
     value->Accept(writer);
-    return buf.GetString();
+    return std::string_view(m_buf.GetString(), m_buf.GetSize());
 }
 
 json_rpc_id json_rpc_reader::get_id()
@@ -143,11 +141,11 @@ json_rpc_writer::~json_rpc_writer()
 {
 }
 
-bool json_rpc_writer::parse(const char* json)
+bool json_rpc_writer::parse(const std::string_view& json)
 {
     try
     {
-        m_doc.Parse(json);
+        m_doc.Parse(json.data(), json.size());
         return !m_doc.HasParseError();
     }
     catch (const std::exception& e)
@@ -192,15 +190,14 @@ void json_rpc_writer::set_id(json_rpc_id value)
         get_value(m_doc, "id", rapidjson::kNumberType).Set<json_rpc_id>(value);
 }
 
-// TODO twice alloc
-std::string json_rpc_writer::stringify(rapidjson::Value* value /*= nullptr*/)
+std::string_view json_rpc_writer::stringify(rapidjson::Value* value /*= nullptr*/)
 {
-    rapidjson::StringBuffer buf;
-    rapidjson::Writer<rapidjson::StringBuffer> writer(buf);
+    m_buf.Clear();
+    rapidjson::Writer<rapidjson::StringBuffer> writer(m_buf);
     if (!value)
         value = &m_doc;
     value->Accept(writer);
-    return buf.GetString();
+    return std::string_view(m_buf.GetString(), m_buf.GetSize());
 }
 
 rapidjson::Value& json_rpc_writer::get_value(rapidjson::Value& root, const char* name, rapidjson::Type Type)

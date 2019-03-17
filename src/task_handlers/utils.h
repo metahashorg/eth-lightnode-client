@@ -57,6 +57,7 @@ namespace utils
 
         void start(const Interval& interval, const Handler& handler, bool immediately = true);
         void stop();
+        void set_callback(const Handler& handler);
 
         void run_once();
 

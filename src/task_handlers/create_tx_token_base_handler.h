@@ -24,11 +24,11 @@ protected:
 
 private:
     void send_get_trans_params();
-    void on_get_trans_params(const std::string& result);
-    void on_get_balance(const std::string& result);
+    void on_get_trans_params(const std::string_view& result);
+    void on_get_balance(const std::string_view& result);
     void on_complete_job();
 
-    bool check_json(const std::string& result);
+    bool check_json(const std::string_view& result);
     
 protected:
     bool                        m_auto_fee = {false};

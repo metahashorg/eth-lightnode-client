@@ -28,17 +28,28 @@ class http_json_rpc_request;
 
 class http_json_rpc_request_impl: public std::enable_shared_from_this<http_json_rpc_request_impl>
 {
+    enum class step: char{
+        ready,
+        connecting,
+        handshaking,
+        writing,
+        reading,
+        complete
+    };
+
+    static const std::string_view step_str[];
+
 public:
     http_json_rpc_request_impl(const std::string& host, asio::io_context& execute_context);
     ~http_json_rpc_request_impl();
 
-    void set_path(const std::string& path);
-    void set_body(const std::string& body);
+    void set_path(const std::string_view& path);
+    void set_body(const std::string_view& body);
 
     void execute();
     void execute_async(http_json_rpc_execute_callback callback);
 
-    std::string get_result();
+    std::string_view get_result();
 
 protected:
     void on_resolve(const boost::system::error_code& e, tcp::resolver::results_type eps);
@@ -79,6 +90,7 @@ private:
     ssl::stream<tcp::socket>            m_ssl_socket;
     std::string                         m_id;
     std::mutex                          m_locker;
+    step                                m_step;
 };
 
 #endif // __HTTP_JSON_RPC_REQUEST_IMPL_H__
