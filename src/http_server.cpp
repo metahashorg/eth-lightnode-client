@@ -23,7 +23,7 @@ void http_server::checkTimeout() {
 
 void http_server::run()
 {
-    tcp::acceptor acceptor(m_io_ctx, m_ep, true);
+    tcp::acceptor acceptor(m_io_ctx, m_ep, false);
     accept(acceptor);
 
     std::vector<std::unique_ptr<std::thread> > threads;
