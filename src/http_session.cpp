@@ -84,13 +84,11 @@ void http_session::send_response(http::response<http::string_body>& response)
 {
     LOG_DBG("HTTP Session: %s <<< %s", m_socket.remote_endpoint().address().to_string().c_str(), response.body().c_str());
 
-    response.version(10);
+    response.version(11);
     response.set(http::field::server, "eth.service");
     response.set(http::field::content_length, response.body().size());
-//    response.set(http::field::keep_alive, true);
-//    response.keep_alive(true);
-    response.set(http::field::keep_alive, false);
-    response.keep_alive(false);
+    response.set(http::field::keep_alive, true);
+    response.keep_alive(true);
     http::write(m_socket, response);
 }
 
@@ -155,7 +153,7 @@ void http_session::process_get_request()
     if (it == get_handlers.end()) {
         LOG_WRN("Incorrect service method %s", method.data())
         writer.set_id(1);
-        writer.set_error(-32602, string_utils::str_concat("Method '", method, "' not found"));
+        writer.set_error(-32601, string_utils::str_concat("Method '", method, "' not found"));
         json = writer.stringify();
     } else {
         writer.set_id(1);
