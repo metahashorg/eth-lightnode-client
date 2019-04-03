@@ -10,15 +10,15 @@
 #include <boost/beast/http.hpp>
 
 http_session::http_session(tcp::socket&& socket) :
-    m_socket(std::move(socket))
+    m_socket(std::move(socket)),
+    m_http_ver(11),
+    m_http_keep_alive(false)
 {
 }
 
 http_session::~http_session()
 {
-    boost::system::error_code ec;
-    m_socket.shutdown(m_socket.shutdown_both, ec);
-    m_socket.close(ec);
+    close();
 }
 
 void http_session::run()
@@ -30,10 +30,11 @@ void http_session::run()
     auto self = shared_from_this();
     http::async_read(m_socket, m_buf, m_req, [self](beast::error_code ec, std::size_t bytes_transferred)
     {
-        if (!ec && bytes_transferred > 0)
-        {
+        if (!ec && bytes_transferred > 0) {
             self->process_request();
-            self->run();
+            if (self->keep_alive()) {
+                self->run();
+            }
         }
     });
 }
@@ -46,6 +47,21 @@ asio::io_context& http_session::get_io_context()
 void http_session::process_request()
 {
     LOG_DBG("HTTP Session: %s >>> %s", m_socket.remote_endpoint().address().to_string().c_str(), m_req.body().c_str());
+
+    for (;;) {
+        m_http_ver = m_req.version();
+        auto field = m_req.find(http::field::connection);
+        if (field != m_req.end() && field->value() == "close") {
+            m_http_keep_alive = false;
+            break;
+        }
+        if (m_http_ver == 11) {
+            m_http_keep_alive = true;
+            break;
+        }
+        m_http_keep_alive = m_req.keep_alive();
+        break;
+    }
 
     switch(m_req.method()) {
     case http::verb::post:
@@ -85,11 +101,28 @@ void http_session::send_response(http::response<http::string_body>& response)
     LOG_DBG("HTTP Session: %s <<< %s", m_socket.remote_endpoint().address().to_string().c_str(), response.body().c_str());
 
     response.version(11);
+
+    time_t dt = time(nullptr);
+    struct tm tm = *gmtime(&dt);
+    char buf[32] = {0};
+    strftime(buf, sizeof(buf), "%a, %d %b %Y %H:%M:%S %Z", &tm);
+
+    response.set(http::field::date, buf);
     response.set(http::field::server, "eth.service");
     response.set(http::field::content_length, response.body().size());
-    response.set(http::field::keep_alive, true);
-    response.keep_alive(true);
+    if (settings::service::keep_alive) {
+        if (m_http_ver == 10) {
+            response.set(http::field::connection, m_http_keep_alive ? "Keep-Alive" : "close");
+        } else if (!m_http_keep_alive){
+            response.set(http::field::connection, "close");
+        }
+    } else {
+        response.set(http::field::connection, "close");
+    }
     http::write(m_socket, response);
+    if (!keep_alive()) {
+        close();
+    }
 }
 
 void http_session::process_post_request()
@@ -167,4 +200,19 @@ void http_session::process_get_request()
         json.append(response.message);
     }
     send_json(json);
+}
+
+void http_session::close()
+{
+    boost::system::error_code ec;
+    m_socket.shutdown(m_socket.shutdown_both, ec);
+    m_socket.close(ec);
+}
+
+bool http_session::keep_alive()
+{
+    if (settings::service::keep_alive) {
+        return m_http_keep_alive;
+    }
+    return false;
 }

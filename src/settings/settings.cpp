@@ -25,6 +25,7 @@ namespace settings
     mpz_class service::gas_price_min;
     mpz_class service::gas_price_max;
     std::vector<std::string> service::access;
+    bool service::keep_alive = {false};
 
     // server
     std::string server::address = {"https://app.metahash.io/api/metachains/"};
@@ -49,6 +50,7 @@ namespace settings
         service::gas_price_min  = tree.get<std::string>("service.gas-price-min", "0");
         service::gas_price_max  = tree.get<std::string>("service.gas-price-max", "0");
         service::local_data     = tree.get<bool>("service.localdata", false);
+        service::keep_alive     = tree.get<bool>("service.keep-alive", false);
 
         asio::io_context ctx;
         tcp::resolver resolver(ctx);

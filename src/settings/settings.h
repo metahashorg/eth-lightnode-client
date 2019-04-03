@@ -24,6 +24,7 @@ namespace settings
         static mpz_class gas_price_max;
         static std::string token;
         static std::vector<std::string> access;
+        static bool keep_alive;
     };
 
     struct server

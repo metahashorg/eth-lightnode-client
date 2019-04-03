@@ -38,10 +38,15 @@ protected:
     void send_response(http::response<http::string_body>& response);
     void send_bad_request(const char* error);
 
+    void close();
+    bool keep_alive();
+
 private:
     tcp::socket                      m_socket;
     beast::flat_buffer               m_buf{ 8192 };
     http::request<http::string_body> m_req;
+    unsigned                         m_http_ver;
+    bool                             m_http_keep_alive;
 };
 
 #endif // HTTP_SESSION_H_
