@@ -5,6 +5,7 @@
 #include <sys/types.h>
 #include <dirent.h>
 #include "connection_pool.h"
+#include "cmake_modules/GitSHA1.h"
 
 extern std::unique_ptr<socket_pool> g_conn_pool;
 
@@ -40,6 +41,8 @@ void status_handler::execute()
         switch (m_cmd) {
             case cmd::general:
             m_writer.add_result("version", std::string("v0"));
+            m_writer.add_result("git_revision", std::string(g_GIT_SHA1));
+            m_writer.add_result("build_date", std::string(g_GIT_DATE));
             m_writer.add_result("address", settings::server::address);
             m_writer.add_result("local_data", settings::service::local_data);
             m_writer.add_result("coin_key", settings::service::coin_key);

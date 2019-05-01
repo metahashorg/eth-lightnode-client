@@ -7,6 +7,8 @@ git_get_commit_datetime(GIT_DATE)
 message(STATUS "Git SHA1: " ${GIT_SHA1})
 message(STATUS "Git DateTime: " ${GIT_DATE})
 
+configure_file("${CMAKE_CURRENT_LIST_DIR}/cmake_modules/GitSHA1.cpp.in" "${CMAKE_BINARY_DIR}/GitSHA1.cpp" @ONLY)
+
 set(BOOST_LIBS_INCLUDE ../3rd_party/boost/include)
 set(BOOST_LIBS_LIBS ../3rd_party/boost/lib)
 find_library(BOOST1 NAMES libboost_filesystem.a HINTS ${BOOST_LIBS_LIBS})
@@ -83,6 +85,8 @@ add_executable(${PROJECT_NAME}
     ${ETH_SOURCES}
     wallet_storage/wallet_storage.cpp
     task_handlers/task_handlers.cpp
+
+    ${CMAKE_BINARY_DIR}/GitSHA1.cpp
     )
 
 include_directories(SYSTEM

@@ -7,6 +7,7 @@
 #include <signal.h>
 #include "common/signal_handler.h"
 #include <execinfo.h>
+#include "cmake_modules/GitSHA1.h"
 
 #define BOOST_ERROR_CODE_HEADER_ONLY
 #include <boost/program_options.hpp>
@@ -21,6 +22,12 @@ int main(int argc, char* argv[])
 {
     try {
         logg::init();
+
+        std::cout << "Revision: " << g_GIT_SHA1 << std::endl;
+        std::cout << "Build Date: " << g_GIT_DATE << std::endl;
+
+        LOG_INF("Revision: ", g_GIT_SHA1);
+        LOG_INF("Build Date: ", g_GIT_DATE);
 
         common::set_signal_handler(signal_catcher);
 
