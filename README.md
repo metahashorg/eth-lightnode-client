@@ -6,11 +6,26 @@ apt install rapidjson-dev libgmp-dev libcurl4-gnutls-dev
 
 cd /tmp/
 git clone https://github.com/adsniper/metahash-eth-client.git
-cd cmetahash-eth-client/
+
+cd metahash-eth-client/3rd_party/secp256k1
+./autogen.sh
+./configure --enable-module-recovery --with-bignum=no
+make
+cp ./.libs/libsecp256k1.a ./lib/linux/
+cd ../gmp
+make clean
+make
+cp .libs/libgmp.a ./lib/
+cp .libs/libgmpxx.a ./lib/
+cd ../cryptopp
+make
+make install
+cd ..
+
 mkdir build
 cd build
 cmake ..
-make
+make 
 ```
 
 ### Using:
