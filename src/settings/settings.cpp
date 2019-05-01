@@ -37,6 +37,9 @@ namespace settings
     bool system::debug_mode = false;
     unsigned int system::jrpc_conn_timeout = 1000;
     unsigned int system::jrpc_timeout = 60000;
+    bool system::conn_pool_enable = true;
+    unsigned int system::conn_pool_ttl = 60;
+    unsigned int system::conn_pool_capacity = 100;
 
     void read()
     {
@@ -76,6 +79,10 @@ namespace settings
         system::isLightKey      = tree.get<bool>("system.is-light-key", true);
         system::jrpc_conn_timeout = tree.get<unsigned int>("system.jrpc-conn-timeout", 1000);
         system::jrpc_timeout    = tree.get<unsigned int>("system.jrpc-timeout", 60000);
+
+        system::conn_pool_enable = tree.get<bool>("system.conn_pool_enable", false);
+        system::conn_pool_ttl = tree.get<unsigned int>("system.conn_pool_ttl", 60);
+        system::conn_pool_capacity = tree.get<unsigned int>("system.conn_pool_capacity", 100);
     }
 
     void read(boost::program_options::variables_map& vm)

@@ -6,7 +6,10 @@
 #include "json_rpc.h"
 #include "data_storage/data_updater.h"
 #include <iostream>
+#include "connection_pool.h"
 //#include <boost/bind.hpp>
+
+std::unique_ptr<socket_pool> g_conn_pool;
 
 http_server::http_server(unsigned short port /*= 9999*/, int thread_count /*= 4*/)
     : m_thread_count(thread_count)
@@ -34,6 +37,8 @@ void http_server::run()
 
     accept(acceptor);
 
+    g_conn_pool = std::make_unique<socket_pool>();
+
     std::vector<std::unique_ptr<std::thread> > threads;
     for (int i = 0; i < m_thread_count; ++i) {
 //        threads.emplace_back(new std::thread(boost::bind(&boost::asio::io_context::run, &m_io_ctx)));
@@ -44,6 +49,10 @@ void http_server::run()
                 LOG_ERR("Http server thread return error code: %s", ec.message().c_str())
             }
         }));
+    }
+
+    if (settings::system::conn_pool_enable) {
+        g_conn_pool->run_monitor();
     }
 
     if (settings::service::local_data) {

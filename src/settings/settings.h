@@ -40,6 +40,9 @@ namespace settings
         static bool debug_mode;
         static unsigned int jrpc_conn_timeout;
         static unsigned int jrpc_timeout;
+        static bool conn_pool_enable;
+        static unsigned int conn_pool_ttl;
+        static unsigned int conn_pool_capacity;
     };
 
     void read();

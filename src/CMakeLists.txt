@@ -42,6 +42,7 @@ add_executable(${PROJECT_NAME}
     settings/settings.cpp
     http_server.cpp
     #http_json_rpc_request_impl.cpp
+    connection_pool.cpp
     http_json_rpc_request.cpp
     json_rpc.cpp
     http_session.cpp
