@@ -1,3 +1,12 @@
+list(APPEND CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake_modules/")
+include(GetGitRevisionDescription)
+get_git_head_revision(GIT_REFSPEC GIT_SHA1)
+git_local_changes(GIT_LOCAL_CHANGES)
+git_get_commit_datetime(GIT_DATE)
+
+message(STATUS "Git SHA1: " ${GIT_SHA1})
+message(STATUS "Git DateTime: " ${GIT_DATE})
+
 set(BOOST_LIBS_INCLUDE ../3rd_party/boost/include)
 set(BOOST_LIBS_LIBS ../3rd_party/boost/lib)
 find_library(BOOST1 NAMES libboost_filesystem.a HINTS ${BOOST_LIBS_LIBS})
@@ -77,7 +86,7 @@ add_executable(${PROJECT_NAME}
 
 include_directories(SYSTEM
     #${Boost_LIBRARY_DIRS} /
-    ${OPENSSL_INCLUDE_DIRS} 
+#    ${OPENSSL_INCLUDE_DIRS}
     ${BOOST_LIBS_INCLUDE}
     "../3rd_party"
     "../3rd_party/gmp"

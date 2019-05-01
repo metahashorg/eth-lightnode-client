@@ -5,6 +5,7 @@
 #include "task_handlers/task_handlers.h"
 #include "json_rpc.h"
 #include "data_storage/data_updater.h"
+#include <iostream>
 //#include <boost/bind.hpp>
 
 http_server::http_server(unsigned short port /*= 9999*/, int thread_count /*= 4*/)
@@ -23,7 +24,14 @@ void http_server::checkTimeout() {
 
 void http_server::run()
 {
-    tcp::acceptor acceptor(m_io_ctx, m_ep, false);
+    tcp::acceptor acceptor(m_io_ctx, m_ep, true);
+
+    // Implements a custom socket option that determines whether or not an accept operation is permitted
+    // to fail with boost::asio::error::connection_aborted. By default the option is false.
+    // TODO check this
+    //boost::asio::socket_base::enable_connection_aborted option(true);
+    //acceptor.set_option(option);
+
     accept(acceptor);
 
     std::vector<std::unique_ptr<std::thread> > threads;
@@ -42,7 +50,8 @@ void http_server::run()
         storage::updater::run();
     }
 
-    LOG_INF("Service runing at %s:%d", m_ep.address().to_string().c_str(), m_ep.port())
+    LOG_INF("Service runing at %s:%d", m_ep.address().to_string().c_str(), m_ep.port());
+    std::cout << "Service runing at " << m_ep.address().to_string() << ":" << m_ep.port() << std::endl;
 
     for (std::size_t i = 0; i < threads.size(); ++i) {
         threads[i]->join();
@@ -66,14 +75,21 @@ void http_server::accept(tcp::acceptor& acceptor)
             LOG_ERR("Failed on accept: %s", ec.message().c_str())
         }
         else {
-            const tcp::endpoint& ep = socket.remote_endpoint();
-            if (check_access(ep)) {
-                std::make_shared<http_session>(std::move(socket))->run();
-            }
-            else {
-                LOG_INF("Connection %s:%u has been dropped", ep.address().to_string().c_str(), ep.port())
-                socket.shutdown(tcp::socket::shutdown_both);
-                socket.close();
+            boost::system::error_code er;
+            const tcp::endpoint& ep = socket.remote_endpoint(er);
+            if (er) {
+                LOG_ERR("%s Could not get remote endpoint: %s", __func__, er.message().c_str());
+                er.clear();
+                socket.shutdown(tcp::socket::shutdown_both, er);
+                socket.close(er);
+            } else {
+                if (check_access(ep)) {
+                    std::make_shared<http_session>(std::move(socket))->run();
+                } else {
+                    LOG_ERR("%s Reject connection: %s:%d", __func__, ep.address().to_string().c_str(), ep.port());
+                    socket.shutdown(tcp::socket::shutdown_both, er);
+                    socket.close(er);
+                }
             }
         }
         accept(acceptor);
