@@ -23,10 +23,12 @@ protected:
     bool check_access(const tcp::endpoint& ep);
 
 private:
-    
+    static void worker_proc(http_server* param);
+    void routine();
     void checkTimeout();
     
 protected:
+    bool                m_run;
     int                 m_thread_count;
     asio::io_context    m_io_ctx;
     tcp::endpoint       m_ep;

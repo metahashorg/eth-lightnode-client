@@ -78,6 +78,24 @@ void http_session::process_request()
             break;
         }
 
+        // for debug begin
+        try {
+            boost::system::error_code ec;
+            auto ep = m_socket.remote_endpoint(ec);
+            if (ec) {
+                LOG_ERR("%s remote_endpoint error: %s", __PRETTY_FUNCTION__, ec.message().c_str());
+            } else {
+                LOG_DBG("%s %s:%d", __PRETTY_FUNCTION__, ep.address().to_string().c_str(), ep.port());
+            }
+        } catch (boost::exception& ex) {
+            LOG_ERR("%s boost exception: %s", __PRETTY_FUNCTION__, boost::diagnostic_information(ex).c_str());
+        } catch (std::exception& ex) {
+            LOG_ERR("%s boost exception: %s", __PRETTY_FUNCTION__, ex.what());
+        } catch (...) {
+            LOG_ERR("%s unhandled exception", __PRETTY_FUNCTION__);
+        }
+        // for debug end
+
         switch(m_req.method()) {
         case http::verb::post:
             process_post_request();
@@ -245,9 +263,30 @@ void http_session::close()
 {
     HTTP_SESS_BGN
     {
+        // for debug begin
+        try {
+            boost::system::error_code ec;
+            auto ep = m_socket.remote_endpoint(ec);
+            if (ec) {
+                LOG_ERR("%s remote_endpoint error: %s", __PRETTY_FUNCTION__, ec.message().c_str());
+            } else {
+                LOG_DBG("%s %s:%d", __PRETTY_FUNCTION__, ep.address().to_string().c_str(), ep.port());
+            }
+        } catch (boost::exception& ex) {
+            LOG_ERR("%s boost exception: %s", __PRETTY_FUNCTION__, boost::diagnostic_information(ex).c_str());
+        } catch (std::exception& ex) {
+            LOG_ERR("%s boost exception: %s", __PRETTY_FUNCTION__, ex.what());
+        } catch (...) {
+            LOG_ERR("%s unhandled exception", __PRETTY_FUNCTION__);
+        }
+        // for debug end
+
         boost::system::error_code ec;
         m_socket.shutdown(m_socket.shutdown_both, ec);
+        LOG_DBG("%s socket shutdown %s: %d", __PRETTY_FUNCTION__, ec.message().c_str(), ec.value());
+        ec.clear();
         m_socket.close(ec);
+        LOG_DBG("%s socket close %s: %d", __PRETTY_FUNCTION__, ec.message().c_str(), ec.value());
     }
     HTTP_SESS_END
 }

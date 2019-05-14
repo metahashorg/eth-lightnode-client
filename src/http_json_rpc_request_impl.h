@@ -58,10 +58,9 @@ protected:
 
     bool error_handler(const boost::system::error_code& e, const char* msg);
     void perform_callback();
-    bool verify_certificate(bool preverified, ssl::verify_context& ctx);
     inline bool is_ssl() const { return m_use_ssl; }
 
-    http_json_rpc_request* get_owner();
+//    http_json_rpc_request* get_owner();
     void close(bool force = false);
 
 private:

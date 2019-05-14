@@ -58,11 +58,13 @@ http_json_rpc_request_impl::http_json_rpc_request_impl(const std::string& host, 
 {
     std::string addr, path, port;
     utils::parse_address(m_host, addr, port, path, m_use_ssl);
+
+    m_req.version(11);
     m_req.set(http::field::host, addr);
     m_req.set(http::field::user_agent, "eth.service");
     m_req.set(http::field::content_type, "application/json");
-    m_req.set(http::field::keep_alive, false);
-    m_req.keep_alive(false);
+//    m_req.set(http::field::keep_alive, false);
+//    m_req.keep_alive(false);
 
     set_path(path);
 
@@ -215,6 +217,7 @@ void http_json_rpc_request_impl::execute_async(http_json_rpc_execute_callback ca
                 if (!ec) {
                     need_connect = false;
                     if (is_ssl()) {
+                        // does not works
                         http::async_write(m_ssl_socket, m_req, [self](const boost::system::error_code& e, std::size_t){
                             self->on_write(e);
                         });
@@ -331,7 +334,7 @@ void http_json_rpc_request_impl::on_connect(const boost::system::error_code& e, 
                 self->on_handshake(e);
             });
         } else {
-            LOG_DBG("Json-rpc[%s] Send request: %s <<< %s", m_id.c_str(), m_host.c_str(), m_req.body().c_str())
+            //LOG_DBG("Json-rpc[%s] Send request: %s <<< %s", m_id.c_str(), m_host.c_str(), m_req.body().c_str())
 
             http::async_write(m_socket, m_req, [self](const boost::system::error_code& e, size_t /*sz*/){
                 self->on_write(e);
@@ -349,7 +352,7 @@ void http_json_rpc_request_impl::on_handshake(const boost::system::error_code& e
             return;
         }
 
-        LOG_DBG("Json-rpc[%s] Send request: %s <<< %s", m_id.c_str(), m_host.c_str(), m_req.body().c_str())
+        //LOG_DBG("Json-rpc[%s] Send request: %s <<< %s", m_id.c_str(), m_host.c_str(), m_req.body().c_str())
 
         auto self = shared_from_this();
         http::async_write(m_ssl_socket, m_req, [self](const boost::system::error_code& e, size_t /*sz*/) {
@@ -404,8 +407,9 @@ void http_json_rpc_request_impl::on_read(const boost::system::error_code& e)
             }
         }
 
-        LOG_DBG("Json-rpc[%s] Recieve response: %s >>> %s", m_id.c_str(), m_host.c_str(), m_result.stringify().data())
+        //LOG_DBG("Json-rpc[%s] Recieve response: %s >>> %s", m_id.c_str(), m_host.c_str(), m_result.stringify().data())
 
+        close();
         perform_callback();
 
         if (!m_async && !m_io_ctx.stopped()) {
@@ -413,8 +417,6 @@ void http_json_rpc_request_impl::on_read(const boost::system::error_code& e)
         }
 
         m_duration.stop();
-
-        close();
     }
     JRPC_END()
 }
@@ -436,15 +438,10 @@ std::string_view http_json_rpc_request_impl::get_result()
     return m_result.stringify();
 }
 
-bool http_json_rpc_request_impl::verify_certificate(bool, ssl::verify_context&)
-{
-  return true;
-}
-
-http_json_rpc_request* http_json_rpc_request_impl::get_owner()
-{
-    return nullptr;
-}
+//http_json_rpc_request* http_json_rpc_request_impl::get_owner()
+//{
+//    return nullptr;
+//}
 
 void http_json_rpc_request_impl::close(bool force)
 {
